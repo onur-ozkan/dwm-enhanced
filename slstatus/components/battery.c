@@ -27,6 +27,32 @@
 	}
 
 	const char *
+	battery_icon(const char *bat)
+	{
+		int perc;
+		char path[PATH_MAX];
+
+		if (esnprintf(path, sizeof(path),
+		              "/sys/class/power_supply/%s/capacity", bat) < 0) {
+			return NULL;
+		}
+		if (pscanf(path, "%d", &perc) != 1) {
+			return NULL;
+		}
+
+		if (perc < 15)
+			return bprintf("%s", "");
+		if (perc < 35 && perc > 15)
+			return bprintf("%s", "");
+		if (perc < 60 && perc >= 35)
+			return bprintf("%s", "");
+		if (perc < 90 && perc >= 60)
+			return bprintf("%s", "");
+
+		return bprintf("%s", "");
+	}
+
+	const char *
 	battery_perc(const char *bat)
 	{
 		int perc;
@@ -50,9 +76,9 @@
 			char *state;
 			char *symbol;
 		} map[] = {
-			{ "Charging",    "+" },
-			{ "Discharging", "-" },
-			{ "Full",        "o" },
+			{ "Charging",    "[ " },
+			{ "Discharging", "[ " },
+			{ "Full",        "[ " },
 		};
 		size_t i;
 		char path[PATH_MAX], state[12];
@@ -161,8 +187,8 @@
 			unsigned int state;
 			char *symbol;
 		} map[] = {
-			{ APM_AC_ON,      "+" },
-			{ APM_AC_OFF,     "-" },
+			{ APM_AC_ON,      "[ " },
+			{ APM_AC_OFF,     "[ " },
 		};
 		struct apm_power_info apm_info;
 		size_t i;
@@ -227,11 +253,11 @@
 		switch(state) {
 			case 0:
 			case 2:
-				return "+";
+				return "[ ";
 			case 1:
-				return "-";
+				return "[ ";
 			default:
-				return "?";
+				return "[ ";
 		}
 	}
 

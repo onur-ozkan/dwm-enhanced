@@ -12,6 +12,7 @@ static const char unknown_str[] = "n/a";
 /*
  * function            description                     argument (example)
  *
+ * battery_icon        battery icon                    battery name (BAT0)
  * battery_perc        battery percentage              battery name (BAT0)
  *                                                     NULL on OpenBSD/FreeBSD
  * battery_state       battery charging state          battery name (BAT0)
@@ -64,6 +65,11 @@ static const char unknown_str[] = "n/a";
  * wifi_essid          WiFi ESSID                      interface name (wlan0)
  */
 static const struct arg args[] = {
-	/* function format          argument */
-	{ datetime, "%s",           "%F %T" },
+	{ uid, " ", NULL }, // just for having initial space
+	{ datetime, "[  %s ] ",           "%a, %B %d %I:%M %p" },
+	{ keymap , "[  %s ] ", NULL},
+	{ uptime , "[  %s ] ", NULL},
+	{ battery_state,  "%s ", "BAT0" },
+	{ battery_icon,  "%s", "BAT0" },
+	{ battery_perc,  " %s%% ] ", "BAT0" },
 };
