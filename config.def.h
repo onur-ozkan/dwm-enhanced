@@ -61,8 +61,8 @@ static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() 
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", color_1, "-nf", color_3, "-sb", color_5, "-sf", color_4, NULL };
 static const char *termcmd[]  = { "st", NULL };
 
-static const char *up_vol[]   = { "/usr/bin/amixer", "-q", "set"," Master", "5%+", "mute", NULL };
-static const char *down_vol[] = { "/usr/bin/amixer", "-q", "set", "Master", "5%-", "mute", NULL };
+static const char *up_vol[]   = { "/usr/bin/amixer", "-q", "set"," Master", "5%+", "unmute", NULL };
+static const char *down_vol[] = { "/usr/bin/amixer", "-q", "set", "Master", "5%-", "unmute", NULL };
 static const char *toggle_vol[] = { "/usr/bin/amixer", "-q", "set", "Master", "toggle", NULL };
 // static const char *toggle_mic[] = { "/usr/bin/amixer", "set", "Capture", "toggle", NULL }
 
