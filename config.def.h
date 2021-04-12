@@ -5,6 +5,7 @@
 /* appearance */
 static const unsigned int borderpx  = 1;        /* border pixel of windows */
 static const unsigned int snap      = 32;       /* snap pixel */
+static const unsigned int gappx     = 3;        /* gap pixel between windows */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
 static const char *fonts[]          = { "Roboto Mono:size=12", "fontawesome:size=12" };
@@ -14,10 +15,18 @@ static const char color_2[]       = "#616161";
 static const char color_3[]       = "#eeeeee";
 static const char color_4[]       = "#f7ca88";
 static const char color_5[]        = "#222222";
+static const unsigned int baralpha = 1;
+static const unsigned int borderalpha = 1;
+
 static const char *colors[][3]      = {
 	/*               fg         bg         border   */
 	[SchemeNorm] = { color_3, color_1, color_2 },
 	[SchemeSel]  = { color_4, color_5,  color_5  },
+};
+
+static const unsigned int alphas[][3]      = {
+	[SchemeNorm] = { OPAQUE, baralpha, borderalpha },
+	[SchemeSel]  = { OPAQUE, baralpha, borderalpha },
 };
 
 /* tagging */
