@@ -69,7 +69,7 @@ static const struct arg args[] = {
 	{ keymap , "[  %s ] ", NULL },
 	{ uptime , "[  %s ] ", NULL },
 	{ vol_icon, "[ %s ", NULL },
-	{ vol_perc, "%s ] ", NULL },
+	{ vol_perc, "%s%% ] ", NULL },
 	{ battery_state,  "%s ", "BAT0" },
 	{ battery_icon,  "%s", "BAT0" },
 	{ battery_perc,  " %s%% ] ", "BAT0" },

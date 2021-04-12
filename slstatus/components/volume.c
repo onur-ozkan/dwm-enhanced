@@ -95,12 +95,5 @@ vol_perc(void)
         }
     }
 
-    if (strcmp("[off]", status) == 0)
-    {
-        return bprintf("%s", "muted");
-    }
-    else
-    {
-		return bprintf("%d", volume);
-    }
+	return bprintf("%d", volume);
 }
