@@ -68,13 +68,8 @@ static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() 
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", color_1, "-nf", color_3, "-sb", color_5, "-sf", color_4, NULL };
 static const char *termcmd[]  = { "st", NULL };
 
-static const char *up_vol[]   = { "/usr/bin/amixer", "-q", "set"," Master", "5%+", "unmute", NULL };
-static const char *down_vol[] = { "/usr/bin/amixer", "-q", "set", "Master", "5%-", "unmute", NULL };
 static const char *toggle_vol[] = { "/usr/bin/amixer", "-q", "set", "Master", "toggle", NULL };
 // static const char *toggle_mic[] = { "/usr/bin/amixer", "set", "Capture", "toggle", NULL }
-
-static const char *up_brightness[]   = { "/usr/bin/brightnessctl", "s", "+5%" };
-static const char *down_brightness[]   = { "/usr/bin/brightnessctl", "s", "5%-" };
 
 static Key keys[] = {
 	/* modifier                     key        function        argument */
@@ -115,12 +110,12 @@ static Key keys[] = {
 	TAGKEYS(                        XK_9,                      8)
 	{ MODKEY|ShiftMask,             XK_q,      quit,           {0} },
 	/* AUDIO */
-	{ 0,                       XF86XK_AudioRaiseVolume, spawn, {.v = up_vol   } },
-	{ 0,                       XF86XK_AudioLowerVolume, spawn, {.v = down_vol } },
+	{ 0,                       XF86XK_AudioRaiseVolume, spawn, SHCMD("/usr/bin/amixer -q set Master 5%+ unmute; kill -44 $(pidof dwmblocks)") },
+	{ 0,                       XF86XK_AudioLowerVolume, spawn, SHCMD("/usr/bin/amixer -q set Master 5%- unmute; kill -44 $(pidof dwmblocks)") },
 	{ 0,                       XF86XK_AudioMute, spawn, {.v = toggle_vol } },
 	/* BRIGHTNESS */
-	{ MODKEY,				   XK_F7, spawn, {.v = down_brightness } },
-	{ MODKEY,				   XK_F8, spawn, {.v = up_brightness } },
+	{ MODKEY,				   XK_F7, spawn, SHCMD("/usr/bin/brightnessctl s 5%- && kill -45 $(pidof dwmblocks)") },
+	{ MODKEY,				   XK_F8, spawn, SHCMD("/usr/bin/brightnessctl s +5% && kill -45 $(pidof dwmblocks)") },
 };
 
 /* button definitions */
