@@ -1,8 +1,12 @@
 #!/bin/bash
 
-bat_capacity=$(cat /sys/class/power_supply/BAT0/capacity)
+bat_capacity=$(</sys/class/power_supply/BAT0/capacity)
+bat_status=$(</sys/class/power_supply/BAT0/status)
 
-if [ $bat_capacity -lt 15 ]
+if [ $bat_status == "Charging" ]
+then
+	battery_icon=" "
+elif [ $bat_capacity -lt 15 ]
 then
 	battery_icon=" "
 elif [ $bat_capacity -lt 35 ] && [ $bat_capacity -ge 15 ]
