@@ -1,0 +1,6 @@
+#!/bin/bash
+
+kernel_v="$(uname -r)"
+kernel_v="${kernel_v%-*}"
+
+echo "$kernel_v"
