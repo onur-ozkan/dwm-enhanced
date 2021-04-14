@@ -1,0 +1,3 @@
+#!/bin/bash
+
+echo "$(uptime -p | cut -d " " -f2-)" 
