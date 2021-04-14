@@ -43,7 +43,7 @@ static const Rule rules[] = {
 };
 
 /* layout(s) */
-static const float mfact     = 0.55; /* factor of master area size [0.05..0.95] */
+static const float mfact     = 0.5; /* factor of master area size [0.05..0.95] */
 static const int nmaster     = 1;    /* number of clients in master area */
 static const int resizehints = 1;    /* 1 means respect size hints in tiled resizals */
 
@@ -70,7 +70,6 @@ static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() 
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", color_1, "-nf", color_3, "-sb", color_5, "-sf", color_4, NULL };
 static const char *termcmd[]  = { "st", NULL };
 
-static const char *toggle_vol[] = { "/usr/bin/amixer", "-q", "set", "Master", "toggle", NULL };
 // static const char *toggle_mic[] = { "/usr/bin/amixer", "set", "Capture", "toggle", NULL }
 
 static Key keys[] = {
@@ -116,7 +115,7 @@ static Key keys[] = {
 	/* AUDIO */
 	{ 0,                       XF86XK_AudioRaiseVolume, spawn, SHCMD("/usr/bin/amixer -q set Master 5%+ unmute; kill -44 $(pidof dwmblocks)") },
 	{ 0,                       XF86XK_AudioLowerVolume, spawn, SHCMD("/usr/bin/amixer -q set Master 5%- unmute; kill -44 $(pidof dwmblocks)") },
-	{ 0,                       XF86XK_AudioMute, spawn, {.v = toggle_vol } },
+	{ 0,                       XF86XK_AudioMute, spawn, SHCMD("/usr/bin/amixer -q set Master toggle; kill -44 $(pidof dwmblocks)") },
 	/* BRIGHTNESS */
 	{ MODKEY,				   XK_F7, spawn, SHCMD("/usr/bin/brightnessctl s 5%- && kill -45 $(pidof dwmblocks)") },
 	{ MODKEY,				   XK_F8, spawn, SHCMD("/usr/bin/brightnessctl s +5% && kill -45 $(pidof dwmblocks)") },
