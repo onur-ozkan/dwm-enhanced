@@ -28,7 +28,6 @@ dwm: ${OBJ}
 clean:
 	rm -f config.h dwm ${OBJ} dwm-${VERSION}.tar.gz
 	cd dmenu && make clean
-	cd slstatus && make clean
 
 dist: clean
 	mkdir -p dwm-${VERSION}
@@ -38,7 +37,6 @@ dist: clean
 	gzip dwm-${VERSION}.tar
 	rm -rf dwm-${VERSION}
 	cd dmenu && make dist
-	cd slstatus && make dist
 
 install: all
 	mkdir -p ${DESTDIR}${PREFIX}/bin
@@ -48,12 +46,10 @@ install: all
 	sed "s/VERSION/${VERSION}/g" < dwm.1 > ${DESTDIR}${MANPREFIX}/man1/dwm.1
 	chmod 644 ${DESTDIR}${MANPREFIX}/man1/dwm.1
 	cd dmenu && make install
-	cd slstatus && make install
 
 uninstall:
 	rm -f ${DESTDIR}${PREFIX}/bin/dwm\
 		${DESTDIR}${MANPREFIX}/man1/dwm.1
 	cd dmenu && make uninstall
-	cd slstatus && make uninstall
 
 .PHONY: all options clean dist install uninstall
