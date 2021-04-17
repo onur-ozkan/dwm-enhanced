@@ -2,9 +2,9 @@
 static const Block blocks[] = {
 	/*Icon*/	/*Command*/		/*Update Interval*/	/*Update Signal*/
 	{ " ", "./modules/kernel",		0,		0	},
-	{ " ", "./modules/updates",	300,	0	},
 	{ " ", "./modules/cpu_temp",	3,		0	},
 	{ " ", "./modules/memory",		3,		0	},
+	{ "",	"./modules/network",	1,	    0   },
 	{ " ", "./modules/date",		3600,	0	},
 	{ " ", "./modules/clock",		3,		0	},
 	{ " ", "./modules/brightness",	0,		11	},
