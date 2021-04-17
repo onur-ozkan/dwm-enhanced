@@ -7,7 +7,7 @@ static const Block blocks[] = {
 	{ " ", "./modules/memory",		3,		0	},
 	{ " ", "./modules/brightness",	0,		11	},
 	{ "", "./modules/volume",		0,		10	}, // this one have dynamic icon, so keep the icon column as blank value
-	{ "",	"./modules/network",	1,	    0   },
+	{ "",	"./modules/network",	1,	    0   }, // this one have dynamic icon, so keep the icon column as blank value
 	{ " ", "./modules/uptime",		60,		0	},
 	{ "", "./modules/battery",		3,		0	}, // this one have dynamic icon, so keep the icon column as blank value
 	{ " ", "./modules/clock",		3,		0	},
