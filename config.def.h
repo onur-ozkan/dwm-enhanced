@@ -16,12 +16,18 @@ static const char color_2[]       = "#616161";
 static const char color_3[]       = "#eeeeee";
 static const char color_4[]       = "#f7ca88";
 static const char color_5[]        = "#222222";
+static const char col_black[]       = "#000000";
+static const char col_red[]         = "#ff0000";
+static const char col_yellow[]      = "#ffff00";
+static const char col_white[]       = "#ffffff";
 static const unsigned int baralpha = 0.5;
 
 static const char *colors[][3]      = {
 	/*               fg         bg         border   */
-	[SchemeNorm] = { color_3, color_1, color_2 },
-	[SchemeSel]  = { color_4, color_5,  color_5  },
+	[SchemeNorm] =	 { color_3, color_1,  color_2 },
+	[SchemeSel]  =	 { color_4, color_5,   color_5 },
+	[SchemeWarn] =	 { col_black, col_yellow, col_red },
+	[SchemeUrgent]=	 { col_white, col_red,    col_red },
 };
 
 static const unsigned int alphas[][3]      = {
@@ -49,9 +55,9 @@ static const int resizehints = 1;    /* 1 means respect size hints in tiled resi
 
 static const Layout layouts[] = {
 	/* symbol     arrange function */
-	{ "[]=",      tile },    /* first entry is default */
-	{ "><>",      NULL },    /* no layout function means floating behavior */
-	{ "[M]",      monocle },
+	{ "﬿",      tile },    /* first entry is default */
+	{ "",      NULL },    /* no layout function means floating behavior */
+	{ "类",      monocle },
 };
 
 /* key definitions */
