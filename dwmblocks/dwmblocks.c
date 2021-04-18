@@ -46,9 +46,6 @@ static Window root;
 static void (*writestatus) () = pstdout;
 #endif
 
-#define ANSI_COLOR_YELLOW  "\x1b[33m"
-#define ANSI_COLOR_RESET   "\x1b[0m"
-
 #include "blocks.h"
 
 static char statusbar[LENGTH(blocks)][CMDLENGTH] = {0};
@@ -72,7 +69,7 @@ void getcmd(const Block *block, char *output)
 	if (delim[0] != '\0') {
 		//only chop off newline if one is present at the end
 		i = output[i-1] == '\n' ? i-1 : i;
-		strncpy(output+i, delim, delimLen); 
+		strncpy(output+i, delim, delimLen);
 	}
 	else
 		output[i++] = '\0';
