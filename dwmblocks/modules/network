@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 cache_path=~/.cache/.traffic
 
@@ -30,5 +30,4 @@ rx_bytes=`expr $new_rx - $old_rx`
 tx_kbs=`expr $tx_bytes / 1024`
 rx_kbs=`expr $rx_bytes / 1024`
 
-
-echo "$vpn_icon$wired_icon$wireless_icon $rx_kbs(kB/s) /  $tx_kbs(kB/s)"
+printf "$vpn_icon$wired_icon$wireless_icon $rx_kbs(kB/s) /  $tx_kbs(kB/s)"

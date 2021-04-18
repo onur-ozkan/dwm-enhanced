@@ -1,3 +1,4 @@
 #!/bin/bash
 
-echo "$(free -m | awk '/^Mem:/ {print $3 "(mb) ""/ "$2 "(mb)"}')"
+icon=""
+printf "$icon $(free -m | awk '/^Mem:/ {print $3 "(mb) ""/ "$2 "(mb)"}')"

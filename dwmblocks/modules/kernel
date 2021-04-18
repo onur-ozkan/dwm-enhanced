@@ -1,6 +1,7 @@
 #!/bin/bash
 
+icon=""
 kernel_v="$(uname -r)"
 kernel_v="${kernel_v%-*}"
 
-echo "$kernel_v"
+printf "$icon $kernel_v"

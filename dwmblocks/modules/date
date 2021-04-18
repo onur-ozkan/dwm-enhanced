@@ -1,3 +1,4 @@
 #!/bin/bash
 
-echo "$(date '+%a, %B %d')"
+icon=""
+printf "$icon $(date '+%a, %B %d')"

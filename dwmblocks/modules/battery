@@ -22,4 +22,4 @@ else
 	battery_icon=" "
 fi
 
-echo "$battery_icon $bat_capacity%"
+printf "$battery_icon $bat_capacity%%"

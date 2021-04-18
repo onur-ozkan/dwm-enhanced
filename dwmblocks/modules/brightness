@@ -1,5 +1,7 @@
 #!/bin/bash
 
-echo "$(/usr/bin/brightnessctl -m | awk -F, '{print substr($4, 0, length($4)-1)}')%"
+icon=""
+
+printf "$icon $(/usr/bin/brightnessctl -m | awk -F, '{print substr($4, 0, length($4)-1)}')%%"
 
 

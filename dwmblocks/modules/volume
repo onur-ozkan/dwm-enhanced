@@ -16,4 +16,4 @@ else
 	vol_icon=" "
 fi
 
-echo "$vol_icon$vol"
+printf "$vol_icon$vol%"
