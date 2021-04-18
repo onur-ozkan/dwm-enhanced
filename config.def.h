@@ -9,7 +9,7 @@ static const unsigned int gappx     = GAP_SIZE;
 static const unsigned int snap      = 32;       /* snap pixel */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
-static const char *fonts[]          = { "Hack Nerd Font:size=11.5:antialias=true:autohint=true" };
+static const char *fonts[]          = { "Hack Nerd Font:size=11.5" };
 static const char dmenufont[]       = "Roboto Mono:size=12";
 static const char color_1[]       = "#222222";
 static const char color_2[]       = "#616161";
