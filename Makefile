@@ -6,13 +6,17 @@ include config.mk
 SRC = drw.c dwm.c util.c
 OBJ = ${SRC:.c=.o}
 
-all: options dwm
+all: font options dwm
 
 options:
 	@echo dwm build options:
 	@echo "CFLAGS   = ${CFLAGS}"
 	@echo "LDFLAGS  = ${LDFLAGS}"
 	@echo "CC       = ${CC}"
+
+font:
+	mkdir -p /usr/share/fonts/robotomono-nerd
+	cp -f robotomono-nerd-medium.ttf /usr/share/fonts/robotomono-nerd/
 
 .c.o:
 	${CC} -c ${CFLAGS} $<
@@ -50,6 +54,7 @@ install: all
 uninstall:
 	rm -f ${DESTDIR}${PREFIX}/bin/dwm\
 		${DESTDIR}${MANPREFIX}/man1/dwm.1
+	rm -f /usr/share/fonts/robotomono-nerd/robotomono-nerd-medium.ttf
 	cd dmenu && make uninstall
 
 .PHONY: all options clean dist install uninstall
