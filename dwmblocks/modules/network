@@ -31,4 +31,4 @@ tx_kbs=`expr $tx_bytes / 1024`
 rx_kbs=`expr $rx_bytes / 1024`
 
 
-echo "$vpn_icon$wired_icon$wireless_icon $tx_kbs(kB/s) /  $rx_kbs(kB/s)"
+echo "$vpn_icon$wired_icon$wireless_icon $rx_kbs(kB/s) /  $tx_kbs(kB/s)"
