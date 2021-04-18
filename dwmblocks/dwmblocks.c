@@ -47,6 +47,8 @@ static Window root;
 static void (*writestatus) () = pstdout;
 #endif
 
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
 
 #include "blocks.h"
 

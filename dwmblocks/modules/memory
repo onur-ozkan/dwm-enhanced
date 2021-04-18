@@ -1,3 +1,3 @@
 #!/bin/bash
 
-echo "$(free -m | awk '/^Mem:/ {print $3 " mb""/"$2 " mb"}')"
+echo "$(free -m | awk '/^Mem:/ {print $3 "(mb) ""/ "$2 "(mb)"}')"
