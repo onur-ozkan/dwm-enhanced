@@ -1,4 +1,4 @@
 #!/bin/bash
 
 icon=""
-printf "$icon $(date '+%I:%M %p')"
+printf "$icon \x02$(date '+%I:%M %p')\x01"

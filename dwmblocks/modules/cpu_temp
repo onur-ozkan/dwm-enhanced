@@ -3,4 +3,4 @@
 icon=""
 temp=$(</sys/class/thermal/thermal_zone0/temp)
 
-printf "$icon $((temp/1000))°C"
+printf "$icon \x02$((temp/1000))°C\x01"

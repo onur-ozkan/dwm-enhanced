@@ -11,23 +11,23 @@ static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
 static const char *fonts[]          = { "RobotoMono Nerd Font:size=12" };
 static const char dmenufont[]       = "Roboto Mono:size=12";
-static const char color_1[]       = "#222222";
-static const char color_2[]       = "#616161";
-static const char color_3[]       = "#eeeeee";
-static const char color_4[]       = "#f7ca88";
-static const char color_5[]        = "#222222";
-static const char col_black[]       = "#000000";
-static const char col_red[]         = "#ff0000";
-static const char col_yellow[]      = "#ffff00";
-static const char col_white[]       = "#ffffff";
-static const unsigned int baralpha = 0.5;
+static const char col_soft_black[]  = "#222222";
+static const char col_gray[]  = "#616161";
+static const char col_dirty_white[] = "#eeeeee";
+static const char col_red[]         = "#d75f5f";
+static const char col_dark_yellow[] = "#f7ca88";
+static const char col_white[]       = "#f5f5f5";
+static const char col_green[]       = "#87af5f";
+static const char col_blue[]        = "#87afd7";
+static const unsigned int baralpha  = 0.5;
 
 static const char *colors[][3]      = {
-	/*               fg         bg         border   */
-	[SchemeNorm] =	 { color_3, color_1,  color_2 },
-	[SchemeSel]  =	 { color_4, color_5,   color_5 },
-	[SchemeWarn] =	 { col_black, col_yellow, col_red },
-	[SchemeUrgent]=	 { col_white, col_red,    col_red },
+	/*                          fg                   bg                 border                    */
+	[SchemeNorm]    =	 { col_dirty_white,     col_soft_black,     col_gray        },   // Normal
+	[SchemeSel]     =	 { col_dark_yellow,     col_soft_black,     col_soft_black  },   // Selected
+	[SchemeRed] =	     { col_red,             col_soft_black,		col_red         },
+	[SchemeBlue] =	     { col_blue,            col_soft_black,     col_blue        },
+	[SchemeGreen] =	     { col_green,           col_soft_black,     col_green       },
 };
 
 static const unsigned int alphas[][3]      = {
@@ -57,7 +57,7 @@ static const Layout layouts[] = {
 	/* symbol     arrange function */
 	{ "﬿",      tile },    /* first entry is default */
 	{ "",      NULL },    /* no layout function means floating behavior */
-	{ "类",      monocle },
+	{ "类",     monocle },
 };
 
 /* key definitions */
@@ -73,7 +73,7 @@ static const Layout layouts[] = {
 
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
-static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", color_1, "-nf", color_3, "-sb", color_5, "-sf", color_4, NULL };
+static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_soft_black, "-nf", col_dirty_white, "-sb", col_soft_black, "-sf", col_dark_yellow, NULL };
 static const char *termcmd[]  = { "st", NULL };
 
 // static const char *toggle_mic[] = { "/usr/bin/amixer", "set", "Capture", "toggle", NULL }

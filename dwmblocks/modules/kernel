@@ -4,4 +4,4 @@ icon=""
 kernel_v="$(uname -r)"
 kernel_v="${kernel_v%-*}"
 
-printf "$icon $kernel_v"
+printf "$icon \x02$kernel_v\x01"

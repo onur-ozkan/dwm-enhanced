@@ -1,4 +1,4 @@
 #!/bin/bash
 
 icon=""
-printf "$icon $(free -m | awk '/^Mem:/ {print $3 "(mb) ""/ "$2 "(mb)"}')"
+printf "$icon $(free -m | awk '/^Mem:/ {print "\x05"$3 "(mb)\x01 " "\x04"$2 "(mb)\x01"}')"
