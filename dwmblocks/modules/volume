@@ -16,4 +16,4 @@ else
 	vol_icon=" "
 fi
 
-printf "$vol_icon\x02$vol%\x01"
+printf "$vol_icon^c#f7ca88^$vol%^d^"

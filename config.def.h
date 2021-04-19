@@ -19,7 +19,6 @@ static const char col_dark_yellow[] = "#f7ca88";
 static const char col_white[]       = "#f5f5f5";
 static const char col_green[]       = "#87af5f";
 static const char col_blue[]        = "#87afd7";
-static const unsigned int baralpha  = 0.5;
 
 static const char *colors[][3]      = {
 	/*                          fg                   bg                 border                    */
@@ -28,11 +27,6 @@ static const char *colors[][3]      = {
 	[SchemeRed] =	     { col_red,             col_soft_black,		col_red         },
 	[SchemeBlue] =	     { col_blue,            col_soft_black,     col_blue        },
 	[SchemeGreen] =	     { col_green,           col_soft_black,     col_green       },
-};
-
-static const unsigned int alphas[][3]      = {
-	[SchemeNorm] = { OPAQUE, baralpha },
-	[SchemeSel]  = { OPAQUE, baralpha },
 };
 
 /* tagging */

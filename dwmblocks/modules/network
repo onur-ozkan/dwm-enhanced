@@ -30,4 +30,4 @@ rx_bytes=`expr $new_rx - $old_rx`
 tx_kbs=`expr $tx_bytes / 1024`
 rx_kbs=`expr $rx_bytes / 1024`
 
-printf "$vpn_icon$wired_icon$wireless_icon \x05$rx_kbs(kB/s)\x01  \x04$tx_kbs(kB/s)\x01"
+printf "$vpn_icon$wired_icon$wireless_icon ^c#87af5f^$rx_kbs"kb^d^"  ^c#87afd7^$tx_kbs"kb^d^""
