@@ -1,7 +1,0 @@
-#!/bin/bash
-
-icon=""
-kernel_v="$(uname -r)"
-kernel_v="${kernel_v%-*}"
-
-printf "$icon ^c#f7ca88^$kernel_v^d^"
