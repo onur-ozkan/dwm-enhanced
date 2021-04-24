@@ -4,7 +4,7 @@
 #include "movestack.h"
 
 /* appearance */
-#define GAP_SIZE 5        						/* default gap size between windows*/
+#define GAP_SIZE 7        						/* default gap size between windows*/
 static const unsigned int gappx     = GAP_SIZE;
 static const unsigned int snap      = 32;       /* snap pixel */
 static const int showbar            = 1;        /* 0 means no bar */
@@ -76,6 +76,8 @@ static const char *termcmd[]  = { "st", NULL };
 
 // static const char *toggle_mic[] = { "/usr/bin/amixer", "set", "Capture", "toggle", NULL }
 
+#define PrintScreenDWM	    0x0000ff61
+
 static Key keys[] = {
 	/* modifier                     key        function        argument */
 	{ MODKEY,                       XK_F1,      spawn,          SHCMD("rofi -show drun -show-icons") },
@@ -118,6 +120,8 @@ static Key keys[] = {
 	TAGKEYS(                        XK_8,                      7)
 	TAGKEYS(                        XK_9,                      8)
 	{ MODKEY|ShiftMask,             XK_q,      quit,           {0} },
+	{ 0,             PrintScreenDWM,      spawn,           SHCMD("flameshot gui") },
+	{ MODKEY|ShiftMask,             XK_l,      spawn,      SHCMD("slock") },
 	/* AUDIO */
 	{ 0,                       XF86XK_AudioRaiseVolume, spawn, SHCMD("/usr/bin/amixer -q set Master 5%+ unmute; kill -44 $(pidof dwmblocks)") },
 	{ 0,                       XF86XK_AudioLowerVolume, spawn, SHCMD("/usr/bin/amixer -q set Master 5%- unmute; kill -44 $(pidof dwmblocks)") },
