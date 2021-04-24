@@ -56,5 +56,3 @@ dkms.conf
 *.swo
 config.h
 dwm
-dmenu/dmenu
-stest
