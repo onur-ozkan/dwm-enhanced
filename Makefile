@@ -31,6 +31,7 @@ dwm: ${OBJ}
 
 clean:
 	rm -f config.h dwm ${OBJ} dwm-${VERSION}.tar.gz
+	cd dmenu && make clean
 
 dist: clean
 	mkdir -p dwm-${VERSION}
@@ -39,6 +40,7 @@ dist: clean
 	tar -cf dwm-${VERSION}.tar dwm-${VERSION}
 	gzip dwm-${VERSION}.tar
 	rm -rf dwm-${VERSION}
+	cd dmenu && make dist
 
 install: all
 	mkdir -p ${DESTDIR}${PREFIX}/bin
@@ -47,10 +49,12 @@ install: all
 	mkdir -p ${DESTDIR}${MANPREFIX}/man1
 	sed "s/VERSION/${VERSION}/g" < dwm.1 > ${DESTDIR}${MANPREFIX}/man1/dwm.1
 	chmod 644 ${DESTDIR}${MANPREFIX}/man1/dwm.1
+	cd dmenu && make install
 
 uninstall:
 	rm -f ${DESTDIR}${PREFIX}/bin/dwm\
 		${DESTDIR}${MANPREFIX}/man1/dwm.1
 	rm -f /usr/share/fonts/robotomono-nerd/robotomono-nerd-medium.ttf
+	cd dmenu && make uninstall
 
 .PHONY: all options clean dist install uninstall
