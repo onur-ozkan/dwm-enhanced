@@ -54,5 +54,4 @@ dkms.conf
 # Other
 *.swp
 *.swo
-config.h
 dwm
