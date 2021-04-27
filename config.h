@@ -118,7 +118,7 @@ static Key keys[] = {
 	TAGKEYS(                        XK_9,                      8)
 	{ MODKEY|ShiftMask,             XK_F12,      quit,           {0} },
 	{ 0,             PrintScreenDWM,      spawn,           SHCMD("flameshot gui") },
-	{ MODKEY|ShiftMask,             XK_l,      spawn,      SHCMD("slock") },
+	{ MODKEY|ShiftMask,             XK_l,      spawn,      SHCMD("dm-tool lock") },
 	/* AUDIO */
 	{ 0,                       XF86XK_AudioRaiseVolume, spawn, SHCMD("/usr/bin/amixer -q set Master 5%+ unmute; kill -44 $(pidof dwmblocks)") },
 	{ 0,                       XF86XK_AudioLowerVolume, spawn, SHCMD("/usr/bin/amixer -q set Master 5%- unmute; kill -44 $(pidof dwmblocks)") },
