@@ -4,7 +4,7 @@
 #include "movestack.h"
 
 /* appearance */
-#define GAP_SIZE 7        						/* default gap size between windows*/
+#define GAP_SIZE 14        						/* default gap size between windows*/
 static const unsigned int gappx     = GAP_SIZE;
 static const unsigned int snap      = 32;       /* snap pixel */
 static const int showbar            = 1;        /* 0 means no bar */
