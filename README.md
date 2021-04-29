@@ -30,37 +30,27 @@ Config file is the source code itself! General options are defined in the config
 
 Shortcuts
 ------------
-| command								    | role												|
-| -											| -													|
-| **alt + f1**								| open menu											|
-| **alt + shift + return**					| open terminal										|
-| **alt + b**								| hide statusbar									|
-| **alt + j**								| focus next stack on 1 step clockwise				|
-| **alt + k**								| focus next stack on 1 step  counterclockwise		|
-| **alt + shift +j**						| move stack position to clockwise					|
-| **alt + shift +k**						| move stack position to counterclockwise     		|
-| **alt + shift +t**						| change tag's layout to tiled						|
-| **alt + shift +f**						| change tag's layout to float						|
-| **alt + shift +m**						| change tag's layout to monocle					|
-| **alt + shift +b**						| change tag's layout to bottom						|
-| **alt + shift +c**						| change tag's layout to three-column		  		|
-| **alt + shift +g**						| change tag's layout to grid			     		|
-| **alt + l**								| increase master size						  		|
-| **alt + h**								| decrease master size						  		|
-| **alt + return**							| put focused stack into master				  		|
-| **alt + shift + e**						| quit stack								  		|
-| **alt + -**								| decrease gap size							  		|
-| **alt + +**								| increase gap size							  		|
-| **alt + shift + =**						| reset gap size							  		|
-| **alt + [0-1-2..9]**					 	| switch to specified tag					  		|
-| **alt + 0**								| preview all stacks						  		|
-| **alt + shift + [0-1-2..9]**				| move focused stack to specified tag		  		|
-| **alt + shift + 0**						| embed focused stack to all tasg			  		|
-| **prtsc**									| use screenshot tool						  		|
-| **alt + shift + l**						| lock screen								  		|
-| **alt + f7**								| decrease screen brightness						|
-| **alt + f8**								| increase screen brightness						|
-| **alt + shift + f12**						| quit dwm session									|
+| command								    | role												                            |
+| -											| -													                            |
+| **alt + f1**								| open menu											                            |
+| **alt + shift + return**					| open terminal										                            |
+| **alt + b**								| hide statusbar									                            |
+| **alt + [j, k]**							| focus next stack on 1 step [clockwise,counterclockwise]				        |
+| **alt + shift + [j, k]**					| move stack position to [clockwise,counterclockwise]	                       	|
+| **alt + shift + [t, f, m, b, c, g]**		| change tag's layout to [tiled,float,monocle,bottom,three-column,grid]			|
+| **alt + [h, l]**							| [decrease,increase] master size						  		                |
+| **alt + return**							| put focused stack into master				  		                            |
+| **alt + shift + e**						| quit stack								  		                            |
+| **alt + [-, +]**							| [decrease,increase] gap size							  		                |
+| **alt + shift + =**						| reset gap size							  		                            |
+| **alt + [0-1-2..9]**					 	| switch to specified tag					  		                            |
+| **alt + 0**								| preview all stacks						  		                            |
+| **alt + shift + [0-1-2..9]**				| move focused stack to specified tag		  		                            |
+| **alt + shift + 0**						| embed focused stack to all tasg			  		                            |
+| **prtsc**									| use screenshot tool						  		                            |
+| **alt + shift + l**						| lock screen								  		                            |
+| **alt + [f7, f8]**						| [decrease,increase] screen brightness				                    		|
+| **alt + shift + f12**						| quit dwm session									                            |
 
 Uninstallation
 ------------
