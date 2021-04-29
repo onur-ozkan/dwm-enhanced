@@ -41,10 +41,9 @@ Shortcuts
 | **alt + [h, l]**							| [decrease,increase] master size						  		                |
 | **alt + return**							| put focused stack into master				  		                            |
 | **alt + shift + e**						| quit stack								  		                            |
-| **alt + [-, +]**							| [decrease,increase] gap size							  		                |
-| **alt + shift + =**						| reset gap size							  		                            |
+| **alt + [-, +, =]**						| [decrease,increase, reset] gap size							  		        |
 | **alt + [0-1-2..9]**					 	| switch to specified tag					  		                            |
-| **alt + 0**								| preview all stacks						  		                            |
+| **alt + 0**								| preview all stacks of all tags						  		                |
 | **alt + shift + [0-1-2..9]**				| move focused stack to specified tag		  		                            |
 | **alt + shift + 0**						| embed focused stack to all tags			  		                            |
 | **prtsc**									| use screenshot tool						  		                            |
