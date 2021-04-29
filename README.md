@@ -46,7 +46,7 @@ Shortcuts
 | **alt + [0-1-2..9]**					 	| switch to specified tag					  		                            |
 | **alt + 0**								| preview all stacks						  		                            |
 | **alt + shift + [0-1-2..9]**				| move focused stack to specified tag		  		                            |
-| **alt + shift + 0**						| embed focused stack to all tasg			  		                            |
+| **alt + shift + 0**						| embed focused stack to all tags			  		                            |
 | **prtsc**									| use screenshot tool						  		                            |
 | **alt + shift + l**						| lock screen								  		                            |
 | **alt + [f7, f8]**						| [decrease,increase] screen brightness				                    		|
