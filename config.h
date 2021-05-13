@@ -72,7 +72,6 @@ static const Layout layouts[] = {
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_soft_black, "-nf", col_dirty_white, "-sb", col_soft_black, "-sf", col_dark_yellow, NULL };
 
-// static const char *toggle_mic[] = { "/usr/bin/amixer", "set", "Capture", "toggle", NULL }
 
 #define PrintScreenDWM	    0x0000ff61
 
@@ -110,8 +109,8 @@ static Key keys[] = {
 	TAGKEYS(                        XK_8,                      7)
 	TAGKEYS(                        XK_9,                      8)
 	{ MODKEY|ShiftMask,             XK_F12,      quit,           {0} },
-	{ 0,             PrintScreenDWM,      spawn,           SHCMD("flameshot gui") },
-	{ MODKEY|ShiftMask,             XK_l,      spawn,      SHCMD("dm-tool lock") },
+	{ 0,             PrintScreenDWM,      spawn,           SHCMD("/usr/bin/flameshot gui") },
+	{ MODKEY|ShiftMask,             XK_l,      spawn,      SHCMD("/usr/bin/dm-tool lock") },
 	/* AUDIO */
 	{ 0,                       XF86XK_AudioRaiseVolume, spawn, SHCMD("/usr/bin/amixer -q set Master 5%+ unmute; kill -44 $(pidof dwmblocks)") },
 	{ 0,                       XF86XK_AudioLowerVolume, spawn, SHCMD("/usr/bin/amixer -q set Master 5%- unmute; kill -44 $(pidof dwmblocks)") },
@@ -119,6 +118,8 @@ static Key keys[] = {
 	/* BRIGHTNESS */
 	{ MODKEY,				   XK_F7, spawn, SHCMD("/usr/bin/brightnessctl s 5%- && kill -45 $(pidof dwmblocks)") },
 	{ MODKEY,				   XK_F8, spawn, SHCMD("/usr/bin/brightnessctl s +5% && kill -45 $(pidof dwmblocks)") },
+	/* Toggle us/tr keyboard layout  */
+    { MODKEY,                  XK_space, spawn, SHCMD("/usr/bin/setxkbmap -query | grep 'layout:[[:blank:]]*us' && setxkbmap tr || setxkbmap us") },
 };
 
 /* button definitions */

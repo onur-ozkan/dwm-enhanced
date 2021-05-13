@@ -13,6 +13,7 @@ To have complete functionality while using dwm-enhanced, its better to have foll
 | -									 								 				    | -                             |
 | brightnessctl						 								 				    | brightness controlling        |
 | lightdm							 								 				    | screen locking                |
+| setxkbmap							 								 				    | keyboard layout switcher      |
 | flameshot															 				    | screenshoting				    |
 | st **[st-enhanced](https://github.com/ozkanonur/st-enhanced)**         				| terminal                      |
 | dmenu  **[dmenu-enhanced](https://github.com/ozkanonur/dmenu-enhanced)**				| app launcher & cmd executer   |
@@ -32,6 +33,7 @@ Shortcuts
 ------------
 | command								    | role												                            |
 | -											| -													                            |
+| **alt + space**							| switch keyboard layout between us/tr											|
 | **alt + f1**								| open menu											                            |
 | **alt + shift + return**					| open terminal										                            |
 | **alt + b**								| hide statusbar									                            |
