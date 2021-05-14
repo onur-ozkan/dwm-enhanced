@@ -119,7 +119,7 @@ static Key keys[] = {
 	{ MODKEY,				   XK_F7, spawn, SHCMD("/usr/bin/brightnessctl s 5%- && kill -45 $(pidof dwmblocks)") },
 	{ MODKEY,				   XK_F8, spawn, SHCMD("/usr/bin/brightnessctl s +5% && kill -45 $(pidof dwmblocks)") },
 	/* Toggle us/tr keyboard layout  */
-    { MODKEY,                  XK_space, spawn, SHCMD("/usr/bin/setxkbmap -query | grep 'layout:[[:blank:]]*us' && setxkbmap tr || setxkbmap us") },
+    { MODKEY,                  XK_space, spawn, SHCMD("/usr/bin/setxkbmap -query | grep 'layout:[[:blank:]]*us' && setxkbmap tr || setxkbmap us && kill -46 $(pidof dwmblocks)") },
 };
 
 /* button definitions */
