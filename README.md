@@ -34,6 +34,7 @@ Shortcuts
 | command								    | role												                            |
 | -											| -													                            |
 | **alt + f**								| toggle fullscreen                     									    |
+| **alt + tab**								| switch between previous-current tag                     						|
 | **alt + space**							| switch keyboard layout between us/tr											|
 | **alt + f1**								| open menu											                            |
 | **alt + shift + return**					| open terminal										                            |
