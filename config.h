@@ -114,9 +114,9 @@ static Key keys[] = {
 	{ 0,             PrintScreenDWM,      spawn,           SHCMD("/usr/bin/flameshot gui") },
 	{ MODKEY|ShiftMask,             XK_l,      spawn,      SHCMD("/usr/bin/dm-tool lock") },
 	/* AUDIO */
-	{ 0,                       XF86XK_AudioRaiseVolume, spawn, SHCMD("/usr/bin/amixer -q set Master 5%+ unmute; kill -44 $(pidof dwmblocks)") },
-	{ 0,                       XF86XK_AudioLowerVolume, spawn, SHCMD("/usr/bin/amixer -q set Master 5%- unmute; kill -44 $(pidof dwmblocks)") },
-	{ 0,                       XF86XK_AudioMute, spawn, SHCMD("/usr/bin/amixer -q set Master toggle; kill -44 $(pidof dwmblocks)") },
+	{ 0,                       XF86XK_AudioRaiseVolume, spawn, SHCMD("/usr/bin/pactl set-sink-volume @DEFAULT_SINK@ +5%; kill -44 $(pidof dwmblocks)") },
+	{ 0,                       XF86XK_AudioLowerVolume, spawn, SHCMD("/usr/bin/pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocks)") },
+	{ 0,                       XF86XK_AudioMute, spawn, SHCMD("/usr/bin/pactl set-sink-mute @DEFAULT_SINK@ toggle; kill -44 $(pidof dwmblocks)") },
 	/* BRIGHTNESS */
 	{ MODKEY,				   XK_F7, spawn, SHCMD("/usr/bin/brightnessctl s 5%- && kill -45 $(pidof dwmblocks)") },
 	{ MODKEY,				   XK_F8, spawn, SHCMD("/usr/bin/brightnessctl s +5% && kill -45 $(pidof dwmblocks)") },
