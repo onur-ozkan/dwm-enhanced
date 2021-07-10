@@ -33,6 +33,7 @@ Shortcuts
 ------------
 | command								    | role												                            |
 | -											| -													                            |
+| **ctrl + space**							| open dmenu											                            |
 | **alt + f**								| toggle fullscreen                     									    |
 | **alt + tab**								| switch between previous-current tag                     						|
 | **alt + space**							| switch keyboard layout between us/tr											|
@@ -52,9 +53,8 @@ Shortcuts
 | **alt + shift + l**						| lock screen								  		                            |
 | **alt + [f7, f8]**						| [decrease,increase] screen brightness				                    		|
 | **alt + shift + f12**						| quit dwm session									                            |
-| **prtsc**									| use screenshot tool						  		                            |
 | **alt + shift + p**						| use screenshot tool						  		                            |
-| **shift + space**							| open dmenu											                            |
+| **prtsc**									| use screenshot tool						  		                            |
 
 Uninstallation
 ------------
