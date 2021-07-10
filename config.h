@@ -13,7 +13,7 @@ static const int focusonwheel       = 0;
 static const char *fonts[]          = { "RobotoMono Nerd Font:size=12" };
 static const char dmenufont[]       = "Roboto Mono:size=12";
 static const char col_soft_black[]  = "#222222";
-static const char col_gray[]  = "#616161";
+static const char col_gray[]        = "#616161";
 static const char col_dirty_white[] = "#eeeeee";
 static const char col_red[]         = "#d75f5f";
 static const char col_dark_yellow[] = "#f7ca88";
@@ -49,11 +49,11 @@ static const int resizehints = 1;    /* 1 means respect size hints in tiled resi
 
 static const Layout layouts[] = {
 	/* symbol     arrange function */
-	{ "﬿ ",     tile            },    /* first entry is default */
+	{ "﬿ ",      tile            },    /* first entry is default */
 	{ " ",      NULL            },    /* no layout function means floating behavior */
 	{ " ",      monocle         },
 	{ "ﳶ ",      bstack          },
-	{ "יִ ",      centeredmaster   },
+	{ "יִ ",      centeredmaster  },
 	{ "ﱖ ",	     gaplessgrid     },
 };
 
@@ -76,31 +76,44 @@ static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont,
 #define PrintScreenDWM	    0x0000ff61
 
 static Key keys[] = {
-	/* modifier                     key        function        argument */
-	{ MODKEY,                       XK_F1,      spawn,          SHCMD("dmenu_run -c -l 17") },
-	{ MODKEY|ShiftMask,             XK_Return,  spawn,          SHCMD("st") },
-	{ MODKEY,                       XK_b,      togglebar,      {0} },
-	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
-	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
-	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
-	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
-	{ MODKEY,                       XK_Return, zoom,           {0} },
-	{ MODKEY,                       XK_Tab,    view,           {0} },
-    { MODKEY|ShiftMask,             XK_e,      killclient,     {0} },
-	{ MODKEY|ShiftMask,             XK_t,      setlayout,      {.v = &layouts[0]} },
-	{ MODKEY|ShiftMask,             XK_f,      setlayout,      {.v = &layouts[1]} },
-	{ MODKEY|ShiftMask,             XK_m,      setlayout,      {.v = &layouts[2]} },
-	{ MODKEY|ShiftMask,             XK_b,      setlayout,      {.v = &layouts[3]} },
-	{ MODKEY|ShiftMask,             XK_g,      setlayout,      {.v = &layouts[5]} },
-	{ MODKEY|ShiftMask,             XK_c,      setlayout,      {.v = &layouts[4]} },
-	{ MODKEY,                       XK_0,      view,           {.ui = ~0 } },
-	{ MODKEY|ShiftMask,             XK_0,      tag,            {.ui = ~0 } },
-	{ MODKEY,                       XK_minus,  setgaps,        {.i = -1 } },
-	{ MODKEY,                       XK_equal,  setgaps,        {.i = +1 } },
-	{ MODKEY|ShiftMask,             XK_equal,  resetgaps,      {.i = GAP_SIZE  } },
-	{ MODKEY|ShiftMask,             XK_j,      movestack,      {.i = +1 } },
-	{ MODKEY|ShiftMask,             XK_k,      movestack,      {.i = -1 } },
-	{ MODKEY,                       XK_f,     togglefullscr,  {0} },
+	/* modifier                     key                         function        argument */
+	{ ShiftMask,                    XK_space,                   spawn,          SHCMD("dmenu_run -c -l 17") },
+	{ MODKEY|ShiftMask,             XK_Return,                  spawn,          SHCMD("st") },
+	{ MODKEY,                       XK_b,                       togglebar,      {0} },
+	{ MODKEY,                       XK_j,                       focusstack,     {.i = +1 } },
+	{ MODKEY,                       XK_k,                       focusstack,     {.i = -1 } },
+	{ MODKEY,                       XK_h,                       setmfact,       {.f = -0.05} },
+	{ MODKEY,                       XK_l,                       setmfact,       {.f = +0.05} },
+	{ MODKEY,                       XK_Return,                  zoom,           {0} },
+	{ MODKEY,                       XK_Tab,                     view,           {0} },
+    { MODKEY|ShiftMask,             XK_e,                       killclient,     {0} },
+	{ MODKEY|ShiftMask,             XK_t,                       setlayout,      {.v = &layouts[0]} },
+	{ MODKEY|ShiftMask,             XK_f,                       setlayout,      {.v = &layouts[1]} },
+	{ MODKEY|ShiftMask,             XK_m,                       setlayout,      {.v = &layouts[2]} },
+	{ MODKEY|ShiftMask,             XK_b,                       setlayout,      {.v = &layouts[3]} },
+	{ MODKEY|ShiftMask,             XK_g,                       setlayout,      {.v = &layouts[5]} },
+	{ MODKEY|ShiftMask,             XK_c,                       setlayout,      {.v = &layouts[4]} },
+	{ MODKEY,                       XK_0,                       view,           {.ui = ~0 } },
+	{ MODKEY|ShiftMask,             XK_0,                       tag,            {.ui = ~0 } },
+	{ MODKEY,                       XK_minus,                   setgaps,        {.i = -1 } },
+	{ MODKEY,                       XK_equal,                   setgaps,        {.i = +1 } },
+	{ MODKEY|ShiftMask,             XK_equal,                   resetgaps,      {.i = GAP_SIZE  } },
+	{ MODKEY|ShiftMask,             XK_j,                       movestack,      {.i = +1 } },
+	{ MODKEY|ShiftMask,             XK_k,                       movestack,      {.i = -1 } },
+	{ MODKEY,                       XK_f,                       togglefullscr,  {0} },
+	{ MODKEY|ShiftMask,             XK_F12,                     quit,           {0} },
+	{ 0,                            PrintScreenDWM,             spawn,          SHCMD("/usr/bin/flameshot gui") },
+	{ MODKEY|ShiftMask,             XK_p,                       spawn,          SHCMD("/usr/bin/flameshot gui") },
+	{ MODKEY|ShiftMask,             XK_l,                       spawn,          SHCMD("/usr/bin/dm-tool lock") },
+	/* AUDIO */
+	{ 0,                            XF86XK_AudioRaiseVolume,    spawn,          SHCMD("/usr/bin/pactl set-sink-volume @DEFAULT_SINK@ +5%; kill -44 $(pidof dwmblocks)") },
+	{ 0,                            XF86XK_AudioLowerVolume,    spawn,          SHCMD("/usr/bin/pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocks)") },
+	{ 0,                            XF86XK_AudioMute,           spawn,          SHCMD("/usr/bin/pactl set-sink-mute @DEFAULT_SINK@ toggle; kill -44 $(pidof dwmblocks)") },
+	/* BRIGHTNESS */
+	{ MODKEY,				        XK_F7,                      spawn,          SHCMD("/usr/bin/brightnessctl s 5%- && kill -45 $(pidof dwmblocks)") },
+	{ MODKEY,				        XK_F8,                      spawn,          SHCMD("/usr/bin/brightnessctl s +5% && kill -45 $(pidof dwmblocks)") },
+	/* Toggle us/tr keyboard layout  */
+    { MODKEY,                       XK_space,                   spawn,          SHCMD("/usr/bin/setxkbmap -query | grep 'layout:[[:blank:]]*us' && setxkbmap tr || setxkbmap us && kill -46 $(pidof dwmblocks)") },
     TAGKEYS(                        XK_1,                      0)
 	TAGKEYS(                        XK_2,                      1)
 	TAGKEYS(                        XK_3,                      2)
@@ -110,18 +123,6 @@ static Key keys[] = {
 	TAGKEYS(                        XK_7,                      6)
 	TAGKEYS(                        XK_8,                      7)
 	TAGKEYS(                        XK_9,                      8)
-	{ MODKEY|ShiftMask,             XK_F12,      quit,           {0} },
-	{ 0,             PrintScreenDWM,      spawn,           SHCMD("/usr/bin/flameshot gui") },
-	{ MODKEY|ShiftMask,             XK_l,      spawn,      SHCMD("/usr/bin/dm-tool lock") },
-	/* AUDIO */
-	{ 0,                       XF86XK_AudioRaiseVolume, spawn, SHCMD("/usr/bin/pactl set-sink-volume @DEFAULT_SINK@ +5%; kill -44 $(pidof dwmblocks)") },
-	{ 0,                       XF86XK_AudioLowerVolume, spawn, SHCMD("/usr/bin/pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocks)") },
-	{ 0,                       XF86XK_AudioMute, spawn, SHCMD("/usr/bin/pactl set-sink-mute @DEFAULT_SINK@ toggle; kill -44 $(pidof dwmblocks)") },
-	/* BRIGHTNESS */
-	{ MODKEY,				   XK_F7, spawn, SHCMD("/usr/bin/brightnessctl s 5%- && kill -45 $(pidof dwmblocks)") },
-	{ MODKEY,				   XK_F8, spawn, SHCMD("/usr/bin/brightnessctl s +5% && kill -45 $(pidof dwmblocks)") },
-	/* Toggle us/tr keyboard layout  */
-    { MODKEY,                  XK_space, spawn, SHCMD("/usr/bin/setxkbmap -query | grep 'layout:[[:blank:]]*us' && setxkbmap tr || setxkbmap us && kill -46 $(pidof dwmblocks)") },
 };
 
 /* button definitions */
@@ -132,11 +133,11 @@ static Button buttons[] = {
 	{ ClkLtSymbol,          0,              Button3,        setlayout,      {.v = &layouts[2]} },
 	{ ClkWinTitle,          0,              Button2,        zoom,           {0} },
 	{ ClkStatusText,        0,              Button2,        spawn,          SHCMD("st") },
+	{ ClkTagBar,            0,              Button1,        view,           {0} },
+	{ ClkTagBar,            0,              Button3,        toggleview,     {0} },
 	{ ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },
 	{ ClkClientWin,         MODKEY,         Button2,        togglefloating, {0} },
 	{ ClkClientWin,         MODKEY,         Button3,        resizemouse,    {0} },
-	{ ClkTagBar,            0,              Button1,        view,           {0} },
-	{ ClkTagBar,            0,              Button3,        toggleview,     {0} },
 	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
 	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
 };
