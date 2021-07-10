@@ -36,7 +36,6 @@ Shortcuts
 | **alt + f**								| toggle fullscreen                     									    |
 | **alt + tab**								| switch between previous-current tag                     						|
 | **alt + space**							| switch keyboard layout between us/tr											|
-| **alt + f1**								| open menu											                            |
 | **alt + shift + return**					| open terminal										                            |
 | **alt + b**								| hide statusbar									                            |
 | **alt + [j, k]**							| focus next stack on 1 step [clockwise,counterclockwise]				        |
@@ -50,10 +49,12 @@ Shortcuts
 | **alt + 0**								| preview all stacks of all tags						  		                |
 | **alt + shift + [0-1-2..9]**				| move focused stack to specified tag		  		                            |
 | **alt + shift + 0**						| embed focused stack to all tags			  		                            |
-| **prtsc**									| use screenshot tool						  		                            |
 | **alt + shift + l**						| lock screen								  		                            |
 | **alt + [f7, f8]**						| [decrease,increase] screen brightness				                    		|
 | **alt + shift + f12**						| quit dwm session									                            |
+| **prtsc**									| use screenshot tool						  		                            |
+| **alt + shift + p**						| use screenshot tool						  		                            |
+| **shift + space**							| open dmenu											                            |
 
 Uninstallation
 ------------
