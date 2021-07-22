@@ -33,7 +33,8 @@ Shortcuts
 ------------
 | command								    | role												                            |
 | -											| -													                            |
-| **ctrl + space**							| open dmenu											                            |
+| **ctrl + return**							| open dmenu											                        |
+| **ctrl + space**							| search on browser											                    |
 | **alt + f**								| toggle fullscreen                     									    |
 | **alt + tab**								| switch between previous-current tag                     						|
 | **alt + space**							| switch keyboard layout between us/tr											|

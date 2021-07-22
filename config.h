@@ -77,8 +77,9 @@ static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont,
 
 static Key keys[] = {
 	/* modifier                     key                         function        argument */
-	{ ControlMask,                  XK_space,                   spawn,          SHCMD("dmenu_run -c -l 17") },
+	{ ControlMask,                  XK_space,                   spawn,          SHCMD("www_search") },
 	{ MODKEY|ShiftMask,             XK_Return,                  spawn,          SHCMD("st") },
+	{ ControlMask,                  XK_Return,                  spawn,          SHCMD("dmenu_run -c -l 17") },
 	{ MODKEY,                       XK_b,                       togglebar,      {0} },
 	{ MODKEY,                       XK_j,                       focusstack,     {.i = +1 } },
 	{ MODKEY,                       XK_k,                       focusstack,     {.i = -1 } },
