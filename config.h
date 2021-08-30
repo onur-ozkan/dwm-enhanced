@@ -104,9 +104,9 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,             XK_k,                       movestack,      {.i = -1 } },
 	{ MODKEY,                       XK_f,                       togglefullscr,  {0} },
 	{ MODKEY|ShiftMask,             XK_F12,                     quit,           {0} },
-	{ 0,                            PrintScreenDWM,             spawn,          SHCMD("/usr/bin/flameshot gui") },
-	{ MODKEY|ShiftMask,             XK_p,                       spawn,          SHCMD("/usr/bin/flameshot gui") },
-	{ MODKEY|ShiftMask,             XK_l,                       spawn,          SHCMD("/usr/bin/dm-tool lock") },
+	{ 0,                            PrintScreenDWM,             spawn,          SHCMD("/usr/bin/flameshot gui &") },
+	{ MODKEY|ShiftMask,             XK_p,                       spawn,          SHCMD("/usr/bin/flameshot gui &") },
+	{ MODKEY|ShiftMask,             XK_l,                       spawn,          SHCMD("/usr/local/bin/slock") },
 	/* AUDIO */
 	{ 0,                            XF86XK_AudioRaiseVolume,    spawn,          SHCMD("/usr/bin/pactl set-sink-volume @DEFAULT_SINK@ +5%; kill -44 $(pidof dwmblocks)") },
 	{ 0,                            XF86XK_AudioLowerVolume,    spawn,          SHCMD("/usr/bin/pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocks)") },

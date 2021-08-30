@@ -12,11 +12,11 @@ To have complete functionality while using dwm-enhanced, its better to have foll
 | dependency																		    | role                          |
 | -									 								 				    | -                             |
 | brightnessctl						 								 				    | brightness controlling        |
-| lightdm							 								 				    | screen locking                |
 | setxkbmap							 								 				    | keyboard layout switcher      |
 | flameshot															 				    | screenshoting				    |
 | st **[st-enhanced](https://github.com/ozkanonur/st-enhanced)**         				| terminal                      |
 | dmenu  **[dmenu-enhanced](https://github.com/ozkanonur/dmenu-enhanced)**				| app launcher & cmd executer   |
+| slock **[st-enhanced](https://github.com/ozkanonur/slock-enhanced)**         			| lockscreen                    |
 | dwmblocks  **[dwmblocks-enhanced](https://github.com/ozkanonur/dwmblocks-enhanced)**  | modular statusbar             |
 
 Installation
