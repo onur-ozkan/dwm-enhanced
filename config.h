@@ -4,8 +4,7 @@
 #include "movestack.h"
 
 /* appearance */
-#define GAP_SIZE 14        						/* default gap size between windows*/
-static const unsigned int gappx     = GAP_SIZE;
+static const unsigned int gappx     = 14;		/* default gap size between windows*/
 static const unsigned int snap      = 32;       /* snap pixel */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
@@ -101,7 +100,7 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,             XK_0,                       tag,            {.ui = ~0 } },
 	{ MODKEY,                       XK_minus,                   setgaps,        {.i = -1 } },
 	{ MODKEY,                       XK_equal,                   setgaps,        {.i = +1 } },
-	{ MODKEY|ShiftMask,             XK_equal,                   resetgaps,      {.i = GAP_SIZE  } },
+	{ MODKEY|ShiftMask,             XK_equal,                   resetgaps,      {.i = gappx  } },
 	{ MODKEY|ShiftMask,             XK_j,                       movestack,      {.i = +1 } },
 	{ MODKEY|ShiftMask,             XK_k,                       movestack,      {.i = -1 } },
 	{ MODKEY,                       XK_f,                       togglefullscr,  {0} },
