@@ -9,6 +9,8 @@ static const unsigned int gappx     = GAP_SIZE;
 static const unsigned int snap      = 32;       /* snap pixel */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
+static const int vertpad            = 9;       /* vertical padding of bar */
+static const int sidepad            = 13;       /* horizontal padding of bar */
 static const Bool viewontag         = True;     /* Switch view on tag switch */
 static const int focusonwheel       = 0;
 static const char *fonts[]          = { "RobotoMono Nerd Font:size=11.5" };
