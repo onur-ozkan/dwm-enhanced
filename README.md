@@ -40,7 +40,9 @@ Shortcuts
 | **alt + space**							| switch keyboard layout between us/tr											|
 | **alt + shift + return**					| open terminal										                            |
 | **alt + b**								| hide statusbar									                            |
-| **alt + [j, k]**							| focus next stack on 1 step [clockwise,counterclockwise]				        |
+| **alt + [j, k]**							| focus next stack in 1 [clockwise,counterclockwise] step				        |
+| **alt + [period, comma]**					| focus [forward,backward] monitor                                              |
+| **alt + shift + [period, comma]**			| move window to [forward,backward] monitor                                              |
 | **alt + shift + [j, k]**					| move stack position to [clockwise,counterclockwise]	                       	|
 | **alt + shift + [t, f, m, b, c, g]**		| change tag's layout to [tiled,float,monocle,bottom,three-column,grid]			|
 | **alt + [h, l]**							| [decrease,increase] master size						  		                |
