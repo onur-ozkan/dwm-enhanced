@@ -558,9 +558,10 @@ void cleanup(void)
 
 	view(&a);
 	selmon->lt[selmon->sellt] = &foo;
-	for (m = mons; m; m = m->next)
+	for (m = mons; m; m = m->next) {
 		while (m->stack)
 			unmanage(m->stack, 0);
+	}
 	XUngrabKey(dpy, AnyKey, AnyModifier, root);
 	while (mons)
 		cleanupmon(mons);
@@ -1846,7 +1847,8 @@ void setup(void)
 	/* init bars */
 	updatebars();
 	updatestatus();
-	updatebarpos(selmon);
+	for (Monitor *m = mons; m; m = m->next)
+		updatebarpos(m);
 
 	/* supporting window for NetWMCheck */
 	wmcheckwin = XCreateSimpleWindow(dpy, root, 0, 0, 1, 1, 0, 0, 0);
@@ -2233,7 +2235,6 @@ int updategeom(void)
 			dirty = 1;
 			mons->mw = mons->ww = sw;
 			mons->mh = mons->wh = sh;
-			updatebarpos(mons);
 		}
 	}
 	if (dirty)
