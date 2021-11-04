@@ -841,7 +841,7 @@ drawstatusbar(Monitor *m, int bh, char* stext) {
 		isCode = 0;
 	text = p;
 
-	w += 2; /* 1px padding on both sides */
+	w += sp * 2; /* padding on both sides */
 	ret = x = m->ww - w;
 
 	drw_setscheme(drw, scheme[LENGTH(colors)]);
@@ -975,7 +975,7 @@ void drawbar(Monitor *m)
 		else
 		{
 			drw_setscheme(drw, scheme[SchemeNorm]);
-			drw_rect(drw, x, 0, w - 2 * sp, bh, 1, 1);
+			drw_rect(drw, x, 0, w, bh, 1, 1);
 		}
 	}
 	drw_map(drw, m->barwin, 0, 0, m->ww, bh);
