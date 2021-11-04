@@ -229,7 +229,6 @@ static void killclient(const Arg *arg);
 static void manage(Window w, XWindowAttributes *wa);
 static void mappingnotify(XEvent *e);
 static void maprequest(XEvent *e);
-static void monocle(Monitor *m);
 static void movemouse(const Arg *arg);
 static Client *nexttiled(Client *c);
 static void pop(Client *);
@@ -286,9 +285,6 @@ static int xerror(Display *dpy, XErrorEvent *ee);
 static int xerrordummy(Display *dpy, XErrorEvent *ee);
 static int xerrorstart(Display *dpy, XErrorEvent *ee);
 static void zoom(const Arg *arg);
-static void bstack(Monitor *m);
-static void centeredmaster(Monitor *m);
-static void gaplessgrid(Monitor *m);
 
 /* variables */
 static const char autostartblocksh[] = "autostart_blocking.sh";
@@ -850,7 +846,7 @@ drawstatusbar(Monitor *m, int bh, char* stext) {
 	drw_setscheme(drw, scheme[LENGTH(colors)]);
 	drw->scheme[ColFg] = scheme[SchemeNorm][ColFg];
 	drw->scheme[ColBg] = scheme[SchemeNorm][ColBg];
-	drw_rect(drw, x, 0, w - 2 * sp, bh, 1, 1);
+	drw_rect(drw, x, 0, w, bh, 1, 1);
 	x++;
 
 	/* process status text */
@@ -1315,20 +1311,6 @@ void maprequest(XEvent *e)
 		manage(ev->window, &wa);
 }
 
-void monocle(Monitor *m)
-{
-	unsigned int n = 0;
-	Client *c;
-
-	for (c = m->clients; c; c = c->next)
-		if (ISVISIBLE(c))
-			n++;
-	if (n > 0) /* override layout symbol */
-		snprintf(m->ltsymbol, sizeof m->ltsymbol, "[%d]", n);
-	for (c = nexttiled(m->clients); c; c = nexttiled(c->next))
-		resize(c, m->wx, m->wy, m->ww - 2 * c->bw, m->wh - 2 * c->bw, 0);
-}
-
 void movemouse(const Arg *arg)
 {
 	int x, y, ocx, ocy, nx, ny;
@@ -1485,7 +1467,7 @@ void resizeclient(Client *c, int x, int y, int w, int h)
 	c->oldh = c->h;
 	c->h = wc.height = h;
 	wc.border_width = c->bw;
-	if (((nexttiled(c->mon->clients) == c && !nexttiled(c->next)) || &monocle == c->mon->lt[c->mon->sellt]->arrange) && !c->isfullscreen && !c->isfloating)
+	if (((nexttiled(c->mon->clients) == c && !nexttiled(c->next))) && !c->isfullscreen && !c->isfloating)
 	{
 		c->w = wc.width += c->bw * 2;
 		c->h = wc.height += c->bw * 2;
@@ -1800,154 +1782,6 @@ void setlayout(const Arg *arg)
 	else
 		drawbar(selmon);
 }
-
-void gaplessgrid(Monitor *m) {
-	unsigned int n, cols, rows, cn, rn, i, cx, cy, cw, ch;
-	Client *c;
-
-	for(n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++) ;
-	if(n == 0)
-		return;
-	if(n == 1){
-		c = nexttiled(m->clients);
-		resize(c, m->wx, m->wy, m->ww - 2 * c->bw, m->wh - 2 * c->bw, 0);
-		return;
-	}
-
-	/* grid dimensions */
-	for(cols = 0; cols <= n/2; cols++)
-		if(cols*cols >= n)
-			break;
-	if(n == 5) /* set layout against the general calculation: not 1:2:2, but 2:3 */
-		cols = 2;
-	rows = n/cols;
-
-	/* window geometries */
-	cw = cols ? m->ww / cols : m->ww;
-	cn = 0; /* current column number */
-	rn = 0; /* current row number */
-	for(i = 0, c = nexttiled(m->clients); c; i++, c = nexttiled(c->next)) {
-		if(i/rows + 1 > cols - n%cols)
-			rows = n/cols + 1;
-		ch = rows ? (m->wh-m->gappx) / rows : m->wh;
-		cx = m->wx + m->gappx + cn*cw;
-		cy = m->wy + m->gappx + rn*ch;
-		resize(c, cx - cn*m->gappx/cols, cy, cw - 2 * (c->bw) - m->gappx - m->gappx/cols, ch - 2 * c->bw - m->gappx, False);
-		rn++;
-		if(rn >= rows) {
-			rn = 0;
-			cn++;
-		}
-	}
-}
-
-void
-centeredmaster(Monitor *m)
-{
-	unsigned int i, n, h, mw, mx, my, oty, ety, tw;
-	Client *c;
-
-	/* count number of clients in the selected monitor */
-	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
-
-	if (n == 0)
-		return;
-	if(n == 1){
-		c = nexttiled(m->clients);
-		resize(c, m->wx, m->wy, m->ww - 2 * c->bw, m->wh - 2 * c->bw, 0);
-		return;
-	}
-
-	/* initialize areas */
-	mw = m->ww;
-	mx = 0;
-	my = m->gappx;
-	tw = mw;
-
-	if (n > m->nmaster) {
-		/* go mfact box in the center if more than nmaster clients */
-		mw = m->nmaster ? m->ww * m->mfact : 0;
-		tw = m->ww - mw;
-
-		if (n - m->nmaster > 1) {
-			/* only one client */
-			mx = (m->ww - mw) / 2;
-			tw = (m->ww - mw) / 2;
-		}
-	}
-
-	oty = m->gappx;
-	ety = m->gappx;
-	for (i = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++)
-	if (i < m->nmaster) {
-		/* nmaster clients are stacked vertically, in the center
-		 * of the screen */
-		h = (m->wh - my) / (MIN(n, m->nmaster) - i);
-		if(m->nmaster >= n)
-			resize(c, m->wx + mx + m->gappx, m->wy + my, mw - 2*(c->bw + m->gappx),
-		       h - (2*c->bw) - m->gappx, 0);
-		else if(m->nmaster + 1 < n)
-			resize(c, m->wx + mx + m->gappx/2, m->wy + my, mw - 2*c->bw - m->gappx, h - 2*c->bw - m->gappx, 0);
-		else
-			resize(c, m->wx + mx + m->gappx, m->wy + my, mw - 2*c->bw - m->gappx*3/2, h - 2*c->bw - m->gappx, 0);
-		if(my + HEIGHT(c) + m->gappx < m->mh)
-			my += HEIGHT(c) + m->gappx;
-	} else {
-		/* stack clients are stacked vertically */
-		if ((i - m->nmaster) % 2) {
-			h = (m->wh - ety) / ( (1 + n - i) / 2);
-			resize(c, m->wx + m->gappx, m->wy + ety, tw - (2*c->bw) - m->gappx*3/2, h - 2*c->bw - m->gappx, 0);
-			if(ety + HEIGHT(c) + m->gappx < m->mh)
-				ety += HEIGHT(c) + m->gappx;
-		} else {
-			h = (m->wh - oty) / ((1 + n - i) / 2);
-			resize(c, m->wx + mx + mw + m->gappx/2, m->wy + oty, tw - (2*c->bw) - m->gappx*3/2, h - 2*c->bw - m->gappx, 0);
-			if(oty + HEIGHT(c) + m->gappx < m->mh)
-				oty += HEIGHT(c) + m->gappx;
-		}
-	}
-}
-
-void
-bstack(Monitor *m)
-{
-	unsigned int i, n, w, mh, mx, tx, ns;
-	Client *c;
-
-	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
-	if (n == 0)
-		return;
-	if(n == 1){
-		c = nexttiled(m->clients);
-		resize(c, m->wx, m->wy, m->ww - 2 * c->bw, m->wh - 2 * c->bw, 0);
-		return;
-	}
-
-	if (n > m->nmaster){
-		mh = m->nmaster ? m->wh * m->mfact : m->gappx;
-		ns = 2;
-	}
-	else{
-		mh = m->wh;
-		ns = 1;
-	}
-	for (i = 0, mx = tx = m->gappx, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++)
-		if (i < m->nmaster) {
-			w = (m->ww - mx) / (MIN(n, m->nmaster) - i) - m->gappx;
-			resize(c, m->wx + mx, m->wy + m->gappx, w - 2*c->bw, mh - 2*c->bw - m->gappx*(5-ns)/2, 0);
-			if(mx + WIDTH(c) + m->gappx < m->mw)
-				mx += WIDTH(c) + m->gappx;
-		} else {
-			w = (m->ww - tx) / (n - i) - m->gappx;
-			if(m->nmaster == 0)
-				resize(c, m->wx + tx, m->wy + mh, w - (2*c->bw), m->wh - mh - 2*c->bw - m->gappx, False);
-			else
-				resize(c, m->wx + tx, m->wy + mh + m->gappx/ns, w - (2*c->bw), m->wh - mh - 2*c->bw - m->gappx*(5-ns)/2, False);
-			if (tx + WIDTH(c) + m->gappx < m->mw)
-				tx += WIDTH(c) + m->gappx;
-		}
-}
-
 
 /* arg > 1.0 will set mfact absolutely */
 void setmfact(const Arg *arg)

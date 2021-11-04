@@ -45,7 +45,7 @@ static const Rule rules[] = {
 };
 
 /* layout(s) */
-static const float mfact     = 0.5; /* factor of master area size [0.05..0.95] */
+static const float mfact     = 0.65; /* factor of master area size [0.05..0.95] */
 static const int nmaster     = 1;    /* number of clients in master area */
 static const int resizehints = 0;    /* 1 means respect size hints in tiled resizals */
 
@@ -53,10 +53,6 @@ static const Layout layouts[] = {
 	/* symbol     arrange function */
 	{ "﬿ ",      tile            },    /* first entry is default */
 	{ " ",      NULL            },    /* no layout function means floating behavior */
-	{ " ",      monocle         },
-	{ "ﳶ ",      bstack          },
-	{ "יִ ",      centeredmaster  },
-	{ "ﱖ ",	     gaplessgrid     },
 };
 
 /* key definitions */
@@ -96,10 +92,6 @@ static Key keys[] = {
     { MODKEY|ShiftMask,             XK_e,                       killclient,     {0} },
 	{ MODKEY|ShiftMask,             XK_t,                       setlayout,      {.v = &layouts[0]} },
 	{ MODKEY|ShiftMask,             XK_f,                       setlayout,      {.v = &layouts[1]} },
-	{ MODKEY|ShiftMask,             XK_m,                       setlayout,      {.v = &layouts[2]} },
-	{ MODKEY|ShiftMask,             XK_b,                       setlayout,      {.v = &layouts[3]} },
-	{ MODKEY|ShiftMask,             XK_g,                       setlayout,      {.v = &layouts[5]} },
-	{ MODKEY|ShiftMask,             XK_c,                       setlayout,      {.v = &layouts[4]} },
 	{ MODKEY,                       XK_0,                       view,           {.ui = ~0 } },
 	{ MODKEY|ShiftMask,             XK_0,                       tag,            {.ui = ~0 } },
 	{ MODKEY,                       XK_minus,                   setgaps,        {.i = -1 } },
@@ -137,7 +129,7 @@ static Key keys[] = {
 static Button buttons[] = {
 	/* click                event mask      button          function        argument */
 	{ ClkLtSymbol,          0,              Button1,        setlayout,      {0} },
-	{ ClkLtSymbol,          0,              Button3,        setlayout,      {.v = &layouts[2]} },
+	{ ClkLtSymbol,          0,              Button3,        setlayout,      {.v = &layouts[1]} },
 	{ ClkWinTitle,          0,              Button2,        zoom,           {0} },
 	{ ClkStatusText,        0,              Button2,        spawn,          SHCMD("st") },
 	{ ClkTagBar,            0,              Button1,        view,           {0} },
