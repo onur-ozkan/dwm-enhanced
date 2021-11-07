@@ -14,14 +14,14 @@ static const Bool viewontag         = True;     /* Switch view on tag switch */
 static const int focusonwheel       = 0;
 static const char *fonts[]          = { "RobotoMono Nerd Font:size=11.5" };
 static const char dmenufont[]       = "Roboto Mono:size=11.5";
-static const char col_soft_black[]  = "#222222";
+static const char col_soft_black[]  = "#191919";
 static const char col_gray[]        = "#616161";
 static const char col_dirty_white[] = "#eeeeee";
 static const char col_red[]         = "#d75f5f";
 static const char col_dark_yellow[] = "#f7ca88";
 static const char col_white[]       = "#f5f5f5";
 static const char col_green[]       = "#87af5f";
-static const char col_blue[]        = "#87afd7";
+static const char col_blue[]        = "#8197bf";
 
 static const char *colors[][3]      = {
 	/*                          fg                   bg                 border                    */
