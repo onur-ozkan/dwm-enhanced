@@ -76,7 +76,7 @@ static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont,
 static Key keys[] = {
 	/* modifier                     key                         function        argument */
 	{ ControlMask,                  XK_space,                   spawn,          SHCMD("www_search") },
-	{ MODKEY|ShiftMask,             XK_Return,                  spawn,          SHCMD("st") },
+	{ MODKEY|ShiftMask,             XK_Return,                  spawn,          SHCMD("st -e tmux") },
 	{ ControlMask,                  XK_Return,                  spawn,          SHCMD("dmenu_run -c -l 17") },
 	{ MODKEY,                       XK_b,                       togglebar,      {0} },
 	{ MODKEY,                       XK_j,                       focusstack,     {.i = +1 } },
