@@ -78,6 +78,7 @@ static Key keys[] = {
 	{ ControlMask,                  XK_space,                   spawn,          SHCMD("www_search") },
 	{ MODKEY|ShiftMask,             XK_Return,                  spawn,          SHCMD("st -e tmux") },
 	{ ControlMask,                  XK_Return,                  spawn,          SHCMD("dmenu_run -c -l 17") },
+	{ MODKEY|ShiftMask,             XK_F7,                      spawn,          SHCMD("next_wallpaper") },
 	{ MODKEY,                       XK_b,                       togglebar,      {0} },
 	{ MODKEY,                       XK_j,                       focusstack,     {.i = +1 } },
 	{ MODKEY,                       XK_k,                       focusstack,     {.i = -1 } },
