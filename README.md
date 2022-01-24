@@ -7,7 +7,7 @@ Requirements
 ------------
 In order to build dwm-enhanced you need to have X installed on your system.
 
-To have complete functionality while using dwm-enhanced, its better to have following dependencies aswell:
+To have complete functionality while using dwm-enhanced, please install [bin scripts](https://github.com/ozkanonur/dotfiles/tree/master/.local/bin) and the following dependencies:
 
 | dependency																		    | role                          |
 | -									 								 				    | -                             |
@@ -18,6 +18,8 @@ To have complete functionality while using dwm-enhanced, its better to have foll
 | dmenu  **[dmenu-enhanced](https://github.com/ozkanonur/dmenu-enhanced)**				| app launcher & cmd executer   |
 | slock **[slock-enhanced](https://github.com/ozkanonur/slock-enhanced)**         		| lockscreen                    |
 | dwmblocks  **[dwmblocks-enhanced](https://github.com/ozkanonur/dwmblocks-enhanced)**  | modular statusbar             |
+| sbs  **[sbs](https://github.com/ozkanonur/sbs)**                                      | background setter             |
+
 
 Installation
 ------------
