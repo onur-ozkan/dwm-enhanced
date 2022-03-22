@@ -64,14 +64,6 @@ static const Layout layouts[] = {
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
 #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
 
-/* commands */
-static char dmenumon[2] = "0";	/* component of dmenucmd, manipulated in spawn() */
-static const char *dmenucmd[] =
-	{ "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_soft_black, "-nf", col_dirty_white,
-	"-sb", col_soft_black, "-sf", col_dark_yellow, NULL
-};
-
-
 #define PrintScreenDWM	    0x0000ff61
 
 static Key keys[] = {
