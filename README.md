@@ -14,11 +14,11 @@ To have complete functionality while using dwm-enhanced, please install [bin scr
 | brightnessctl						 								 				    | brightness controlling        |
 | setxkbmap							 								 				    | keyboard layout switcher      |
 | flameshot															 				    | screenshoting				    |
-| st **[st-enhanced](https://github.com/ozkanonur/st-enhanced)**         				| terminal                      |
-| dmenu  **[dmenu-enhanced](https://github.com/ozkanonur/dmenu-enhanced)**				| app launcher & cmd executer   |
-| slock **[slock-enhanced](https://github.com/ozkanonur/slock-enhanced)**         		| lockscreen                    |
-| dwmblocks  **[dwmblocks-enhanced](https://github.com/ozkanonur/dwmblocks-enhanced)**  | modular statusbar             |
-| sbs  **[sbs](https://github.com/ozkanonur/sbs)**                                      | background setter             |
+| **[st-enhanced](https://github.com/ozkanonur/st-enhanced)**         				    | terminal                      |
+| **[dmenu-enhanced](https://github.com/ozkanonur/dmenu-enhanced)**				        | app launcher & cmd executer   |
+| **[slock-enhanced](https://github.com/ozkanonur/slock-enhanced)**         		    | lockscreen                    |
+| **[dwmblocks-enhanced](https://github.com/ozkanonur/dwmblocks-enhanced)**             | modular statusbar             |
+| **[sbs](https://github.com/ozkanonur/sbs)**                                           | background setter             |
 
 
 Installation
