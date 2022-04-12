@@ -11,7 +11,7 @@ To have complete functionality while using dwm-enhanced, please install [bin scr
 
 | dependency																		    | role                          |
 | -									 								 				    | -                             |
-| brightnessctl						 								 				    | brightness controlling        |
+| brightnessctl(for laptops)						 								 	| brightness controlling        |
 | setxkbmap							 								 				    | keyboard layout switcher      |
 | flameshot															 				    | screenshoting				    |
 | **[st-enhanced](https://github.com/ozkanonur/st-enhanced)**         				    | terminal                      |
