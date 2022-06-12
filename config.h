@@ -69,7 +69,7 @@ static const Layout layouts[] = {
 static Key keys[] = {
 	/* modifier key function argument */
 	{ControlMask, XK_space, spawn, SHCMD("www_search")},
-	{MODKEY | ShiftMask, XK_Return, spawn, SHCMD("st -e tmux")},
+	{MODKEY | ShiftMask, XK_Return, spawn, SHCMD("st -e zsh -c 'TERM=screen-256color tmux' >/dev/null 2>&1")},
 	{ControlMask, XK_Return, spawn, SHCMD("dmenu_run -c -l 17")},
 	{MODKEY | ShiftMask, XK_F7, spawn, SHCMD("next_wallpaper")},
 	{MODKEY, XK_b, togglebar, {0}},
@@ -125,7 +125,7 @@ static Button buttons[] = {
 	{ClkLtSymbol, 0, Button1, setlayout, {0}},
 	{ClkLtSymbol, 0, Button3, setlayout, {.v = &layouts[1]}},
 	{ClkWinTitle, 0, Button2, zoom, {0}},
-	{ClkStatusText, 0, Button2, spawn, SHCMD("st")},
+	{ClkStatusText, 0, Button2, spawn, SHCMD("st -e zsh -c 'TERM=screen-256color tmux' >/dev/null 2>&1")},
 	{ClkTagBar, 0, Button1, view, {0}},
 	{ClkTagBar, 0, Button3, toggleview, {0}},
 	{ClkClientWin, MODKEY, Button1, movemouse, {0}},
