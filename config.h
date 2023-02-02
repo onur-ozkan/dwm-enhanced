@@ -12,9 +12,9 @@ static const int vertpad = 9;	/* vertical padding of bar */
 static const int sidepad = 13;	/* horizontal padding of bar */
 static const Bool viewontag = True;	/* Switch view on tag switch */
 static const int focusonwheel = 0;
-static const char *fonts[] = { "RobotoMono Nerd Font:size=11.5" };
+static const char *fonts[] = { "RobotoMono Nerd Font:size=10.50" };
 
-static const char dmenufont[] = "Roboto Mono:size=11.5";
+static const char dmenufont[] = "Roboto Mono:size=10.50";
 static const char col_soft_black[] = "#212121";
 static const char col_gray[] = "#616161";
 static const char col_dirty_white[] = "#eeeeee";
