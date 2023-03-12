@@ -106,8 +106,8 @@ static Key keys[] = {
 	{0, XF86XK_AudioMute, spawn,
 	 SHCMD("/usr/bin/pactl set-sink-mute @DEFAULT_SINK@ toggle; kill -44 $(pidof dwmblocks)")},
 	/* BRIGHTNESS */
-	{MODKEY, XK_F7, spawn, SHCMD("/usr/bin/brightnessctl s 5%- && kill -45 $(pidof dwmblocks)")},
-	{MODKEY, XK_F8, spawn, SHCMD("/usr/bin/brightnessctl s +5% && kill -45 $(pidof dwmblocks)")},
+	{0, XF86XK_MonBrightnessUp, spawn, SHCMD("kill -45 $(pidof dwmblocks)")},
+	{0, XF86XK_MonBrightnessDown, spawn, SHCMD("kill -45 $(pidof dwmblocks)")},
 	/* Toggle us/tr keyboard layout */
 	{MODKEY, XK_space, spawn,
 	 SHCMD
