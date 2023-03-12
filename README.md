@@ -11,7 +11,6 @@ To have complete functionality while using dwm-enhanced, please install [bin scr
 
 | dependency																		    | role                          |
 | -									 								 				    | -                             |
-| brightnessctl(for laptops)						 								 	| brightness controlling        |
 | setxkbmap							 								 				    | keyboard layout switcher      |
 | flameshot															 				    | screenshoting				    |
 | **[st-enhanced](https://github.com/ozkanonur/st-enhanced)**         				    | terminal                      |
@@ -56,7 +55,6 @@ Shortcuts
 | **alt + shift + [0-1-2..9]**				| move focused stack to specified tag		  		                            |
 | **alt + shift + 0**						| embed focused stack to all tags			  		                            |
 | **alt + shift + l**						| lock screen								  		                            |
-| **alt + [f7, f8]**						| [decrease,increase] screen brightness				                    		|
 | **alt + shift + f7**						| change window background									                    |
 | **alt + shift + f12**						| quit dwm session									                            |
 | **alt + shift + p**						| use screenshot tool						  		                            |
