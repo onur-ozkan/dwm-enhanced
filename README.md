@@ -7,17 +7,17 @@ Requirements
 ------------
 In order to build dwm-enhanced you need to have X installed on your system.
 
-To have complete functionality while using dwm-enhanced, please install [bin scripts](https://github.com/ozkanonur/dotfiles/tree/master/.local/bin) and the following dependencies:
+To have complete functionality while using dwm-enhanced, please install [bin scripts](https://github.com/onur-ozkan/dotfiles/tree/master/.local/bin) and the following dependencies:
 
 | dependency																		    | role                          |
 | -									 								 				    | -                             |
 | setxkbmap							 								 				    | keyboard layout switcher      |
 | flameshot															 				    | screenshoting				    |
-| **[st-enhanced](https://github.com/ozkanonur/st-enhanced)**         				    | terminal                      |
-| **[dmenu-enhanced](https://github.com/ozkanonur/dmenu-enhanced)**				        | app launcher & cmd executer   |
-| **[slock-enhanced](https://github.com/ozkanonur/slock-enhanced)**         		    | lockscreen                    |
-| **[dwmblocks-enhanced](https://github.com/ozkanonur/dwmblocks-enhanced)**             | modular statusbar             |
-| **[sbs](https://github.com/ozkanonur/sbs)**                                           | background setter             |
+| **[st-enhanced](https://github.com/onur-ozkan/st-enhanced)**         				    | terminal                      |
+| **[dmenu-enhanced](https://github.com/onur-ozkan/dmenu-enhanced)**				        | app launcher & cmd executer   |
+| **[slock-enhanced](https://github.com/onur-ozkan/slock-enhanced)**         		    | lockscreen                    |
+| **[dwmblocks-enhanced](https://github.com/onur-ozkan/dwmblocks-enhanced)**             | modular statusbar             |
+| **[sbs](https://github.com/onur-ozkan/sbs)**                                           | background setter             |
 
 
 Installation
