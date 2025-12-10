@@ -95,23 +95,23 @@ static Key keys[] = {
 	{MODKEY | ShiftMask, XK_k, movestack, {.i = -1}},
 	{MODKEY, XK_f, togglefullscr, {0}},
 	{MODKEY | ShiftMask, XK_F12, quit, {0}},
-	{0, PrintScreenDWM, spawn, SHCMD("/usr/bin/flameshot gui &")},
-	{MODKEY | ShiftMask, XK_p, spawn, SHCMD("/usr/bin/flameshot gui &")},
-	{MODKEY | ShiftMask, XK_l, spawn, SHCMD("/usr/local/bin/slock")},
+	{0, PrintScreenDWM, spawn, SHCMD("flameshot gui &")},
+	{MODKEY | ShiftMask, XK_p, spawn, SHCMD("flameshot gui &")},
+	{MODKEY | ShiftMask, XK_l, spawn, SHCMD("slock")},
 	/* AUDIO */
 	{0, XF86XK_AudioRaiseVolume, spawn,
-	 SHCMD("/usr/bin/pactl set-sink-volume @DEFAULT_SINK@ +5%; kill -44 $(pidof dwmblocks)")},
+	 SHCMD("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+; kill -44 $(pidof dwmblocks)")},
 	{0, XF86XK_AudioLowerVolume, spawn,
-	 SHCMD("/usr/bin/pactl set-sink-volume @DEFAULT_SINK@ -5%; kill -44 $(pidof dwmblocks)")},
+	 SHCMD("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-; kill -44 $(pidof dwmblocks)")},
 	{0, XF86XK_AudioMute, spawn,
-	 SHCMD("/usr/bin/pactl set-sink-mute @DEFAULT_SINK@ toggle; kill -44 $(pidof dwmblocks)")},
+	 SHCMD("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle; kill -44 $(pidof dwmblocks)")},
 	/* BRIGHTNESS */
 	{0, XF86XK_MonBrightnessUp, spawn, SHCMD("kill -45 $(pidof dwmblocks)")},
 	{0, XF86XK_MonBrightnessDown, spawn, SHCMD("kill -45 $(pidof dwmblocks)")},
 	/* Toggle us/tr keyboard layout */
 	{MODKEY, XK_space, spawn,
 	 SHCMD
-	 ("/usr/bin/setxkbmap -query | grep 'layout:[[:blank:]]*us' && setxkbmap tr || setxkbmap us && kill -46 $(pidof dwmblocks)")},
+	 ("setxkbmap -query | grep 'layout:[[:blank:]]*us' && setxkbmap tr || setxkbmap us && kill -46 $(pidof dwmblocks)")},
 	TAGKEYS(XK_1, 0) TAGKEYS(XK_2, 1) TAGKEYS(XK_3, 2) TAGKEYS(XK_4, 3) TAGKEYS(XK_5,
 																				4) TAGKEYS(XK_6,
 																						   5)
