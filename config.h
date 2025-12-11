@@ -106,8 +106,8 @@ static Key keys[] = {
 	{0, XF86XK_AudioMute, spawn,
 	 SHCMD("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle; kill -44 $(pidof dwmblocks)")},
 	/* BRIGHTNESS */
-	{0, XF86XK_MonBrightnessUp, spawn, SHCMD("kill -45 $(pidof dwmblocks)")},
-	{0, XF86XK_MonBrightnessDown, spawn, SHCMD("kill -45 $(pidof dwmblocks)")},
+	{0, XF86XK_MonBrightnessUp, spawn, SHCMD("brightnessctl set +5% && kill -45 $(pidof dwmblocks)")},
+	{0, XF86XK_MonBrightnessDown, spawn, SHCMD("brightnessctl set 5%- && kill -45 $(pidof dwmblocks)")},
 	/* Toggle us/tr keyboard layout */
 	{MODKEY, XK_space, spawn,
 	 SHCMD
