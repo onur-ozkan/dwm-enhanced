@@ -7,7 +7,7 @@ Requirements
 ------------
 In order to build dwm-enhanced you need to have X installed on your system.
 
-To have complete functionality while using dwm-enhanced, please install [bin scripts](https://github.com/onur-ozkan/nixtconf/tree/master/.local/bin) and the following dependencies:
+To have complete functionality while using dwm-enhanced, please install [bin scripts](https://github.com/onur-ozkan/nixconf/tree/master/.local/bin) and the following dependencies:
 
 | dependency																		    | role                          |
 | -									 								 				    | -                             |
