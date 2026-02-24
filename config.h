@@ -68,7 +68,7 @@ static const Layout layouts[] = {
 
 static Key keys[] = {
 	/* modifier key function argument */
-	{ControlMask, XK_space, spawn, SHCMD("www_search")},
+	{ControlMask, XK_space, spawn, SHCMD("www")},
 	{MODKEY | ShiftMask, XK_Return, spawn, SHCMD("st -e zsh -c 'TERM=screen-256color tmux' >/dev/null 2>&1")},
 	{ControlMask, XK_Return, spawn, SHCMD("dmenu_run -c -l 17")},
 	{MODKEY | ShiftMask, XK_F7, spawn, SHCMD("next_wallpaper")},
