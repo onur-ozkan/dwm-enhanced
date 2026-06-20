@@ -1616,10 +1616,12 @@ void run(void)
 
 void runautostart(void)
 {
+	char *cmd;
 	char *pathpfx;
 	char *path;
 	char *xdgdatahome;
 	char *home;
+	int result;
 	struct stat sb;
 
 	if ((home = getenv("HOME")) == NULL)
@@ -1634,7 +1636,9 @@ void runautostart(void)
 		/* space for path segments, separators and nul */
 		pathpfx = ecalloc(1, strlen(xdgdatahome) + strlen(dwmdir) + 2);
 
-		if (sprintf(pathpfx, "%s/%s", xdgdatahome, dwmdir) <= 0)
+		result = snprintf(pathpfx, strlen(xdgdatahome) + strlen(dwmdir) + 2, "%s/%s",
+					  xdgdatahome, dwmdir);
+		if (result < 0 || (size_t)result >= strlen(xdgdatahome) + strlen(dwmdir) + 2)
 		{
 			free(pathpfx);
 			return;
@@ -1645,7 +1649,9 @@ void runautostart(void)
 		/* space for path segments, separators and nul */
 		pathpfx = ecalloc(1, strlen(home) + strlen(localshare) + strlen(dwmdir) + 3);
 
-		if (sprintf(pathpfx, "%s/%s/%s", home, localshare, dwmdir) < 0)
+		result = snprintf(pathpfx, strlen(home) + strlen(localshare) + strlen(dwmdir) + 3,
+					  "%s/%s/%s", home, localshare, dwmdir);
+		if (result < 0 || (size_t)result >= strlen(home) + strlen(localshare) + strlen(dwmdir) + 3)
 		{
 			free(pathpfx);
 			return;
@@ -1664,7 +1670,8 @@ void runautostart(void)
 		}
 		pathpfx = pathpfx_new;
 
-		if (sprintf(pathpfx, "%s/.%s", home, dwmdir) <= 0)
+		result = snprintf(pathpfx, strlen(home) + strlen(dwmdir) + 3, "%s/.%s", home, dwmdir);
+		if (result < 0 || (size_t)result >= strlen(home) + strlen(dwmdir) + 3)
 		{
 			free(pathpfx);
 			return;
@@ -1673,24 +1680,36 @@ void runautostart(void)
 
 	/* try the blocking script first */
 	path = ecalloc(1, strlen(pathpfx) + strlen(autostartblocksh) + 2);
-	if (sprintf(path, "%s/%s", pathpfx, autostartblocksh) <= 0)
+	result = snprintf(path, strlen(pathpfx) + strlen(autostartblocksh) + 2, "%s/%s",
+				  pathpfx, autostartblocksh);
+	if (result < 0 || (size_t)result >= strlen(pathpfx) + strlen(autostartblocksh) + 2)
 	{
 		free(path);
 		free(pathpfx);
+		return;
 	}
 
 	if (access(path, X_OK) == 0)
 		system(path);
 
 	/* now the non-blocking script */
-	if (sprintf(path, "%s/%s", pathpfx, autostartsh) <= 0)
+	result = snprintf(path, strlen(pathpfx) + strlen(autostartsh) + 2, "%s/%s", pathpfx,
+				  autostartsh);
+	if (result < 0 || (size_t)result >= strlen(pathpfx) + strlen(autostartsh) + 2)
 	{
 		free(path);
 		free(pathpfx);
+		return;
 	}
 
 	if (access(path, X_OK) == 0)
-		system(strcat(path, " &"));
+	{
+		cmd = ecalloc(1, strlen(path) + 4);
+		result = snprintf(cmd, strlen(path) + 4, "%s &", path);
+		if (result >= 0 && (size_t)result < strlen(path) + 4)
+			system(cmd);
+		free(cmd);
+	}
 
 	free(pathpfx);
 	free(path);
