@@ -174,6 +174,7 @@ struct Monitor
 	unsigned int tagset[2];
 	int showbar;
 	int topbar;
+	int bardirty;
 	Client *clients;
 	Client *sel;
 	Client *stack;
@@ -221,6 +222,7 @@ static void focus(Client * c);
 static void focusin(XEvent * e);
 static void focusmon(const Arg * arg);
 static void focusstack(const Arg * arg);
+static void flushbars(void);
 static Atom *getatomprop(Client * c, Atom prop, unsigned long *count);
 static int getrootptr(int *x, int *y);
 static long getstate(Window w);
@@ -239,6 +241,7 @@ static void pop(Client *);
 static void propertynotify(XEvent * e);
 static void quit(const Arg * arg);
 static Monitor *recttomon(int x, int y, int w, int h);
+static void renderbar(Monitor * m);
 static void resize(Client * c, int x, int y, int w, int h, int interact);
 static void resizeclient(Client * c, int x, int y, int w, int h);
 static void resizemouse(const Arg * arg);
@@ -734,7 +737,6 @@ void configurerequest(XEvent * e)
 		wc.stack_mode = ev->detail;
 		XConfigureWindow(dpy, ev->window, ev->value_mask, &wc);
 	}
-	XSync(dpy, False);
 }
 
 Monitor *createmon(void)
@@ -1023,6 +1025,25 @@ Monitor *dirtomon(int dir)
 
 void drawbar(Monitor * m)
 {
+	/* Draw once after the current event has finished. */
+	m->bardirty = 1;
+}
+
+void flushbars(void)
+{
+	Monitor *m;
+
+	for (m = mons; m; m = m->next)
+		if (m->bardirty)
+		{
+			m->bardirty = 0;
+			if (m->showbar)
+				renderbar(m);
+		}
+}
+
+void renderbar(Monitor * m)
+{
 	int x, w, tw = 0;
 	int boxs = drw->fonts->h / 9;
 	int boxw = drw->fonts->h / 6 + 2;
@@ -1275,38 +1296,33 @@ int gettextprop(Window w, Atom atom, char *text, unsigned int size)
 
 void grabbuttons(Client * c, int focused)
 {
-	updatenumlockmask();
-	{
-		unsigned int i, j;
-		unsigned int modifiers[] = { 0, LockMask, numlockmask, numlockmask | LockMask };
-		XUngrabButton(dpy, AnyButton, AnyModifier, c->win);
-		if (!focused)
-			XGrabButton(dpy, AnyButton, AnyModifier, c->win, False,
-						BUTTONMASK, GrabModeSync, GrabModeSync, None, None);
-		for (i = 0; i < LENGTH(buttons); i++)
-			if (buttons[i].click == ClkClientWin)
-				for (j = 0; j < LENGTH(modifiers); j++)
-					XGrabButton(dpy, buttons[i].button,
-								buttons[i].mask | modifiers[j],
-								c->win, False, BUTTONMASK, GrabModeAsync, GrabModeSync, None, None);
-	}
+	unsigned int i, j;
+	unsigned int modifiers[] = { 0, LockMask, numlockmask, numlockmask | LockMask };
+
+	XUngrabButton(dpy, AnyButton, AnyModifier, c->win);
+	if (!focused)
+		XGrabButton(dpy, AnyButton, AnyModifier, c->win, False,
+					BUTTONMASK, GrabModeSync, GrabModeSync, None, None);
+	for (i = 0; i < LENGTH(buttons); i++)
+		if (buttons[i].click == ClkClientWin)
+			for (j = 0; j < LENGTH(modifiers); j++)
+				XGrabButton(dpy, buttons[i].button,
+							buttons[i].mask | modifiers[j],
+							c->win, False, BUTTONMASK, GrabModeAsync, GrabModeSync, None, None);
 }
 
 void grabkeys(void)
 {
-	updatenumlockmask();
-	{
-		unsigned int i, j;
-		unsigned int modifiers[] = { 0, LockMask, numlockmask, numlockmask | LockMask };
-		KeyCode code;
+	unsigned int i, j;
+	unsigned int modifiers[] = { 0, LockMask, numlockmask, numlockmask | LockMask };
+	KeyCode code;
 
-		XUngrabKey(dpy, AnyKey, AnyModifier, root);
-		for (i = 0; i < LENGTH(keys); i++)
-			if ((code = XKeysymToKeycode(dpy, keys[i].keysym)))
-				for (j = 0; j < LENGTH(modifiers); j++)
-					XGrabKey(dpy, code, keys[i].mod | modifiers[j], root,
-							 True, GrabModeAsync, GrabModeAsync);
-	}
+	XUngrabKey(dpy, AnyKey, AnyModifier, root);
+	for (i = 0; i < LENGTH(keys); i++)
+		if ((code = XKeysymToKeycode(dpy, keys[i].keysym)))
+			for (j = 0; j < LENGTH(modifiers); j++)
+				XGrabKey(dpy, code, keys[i].mod | modifiers[j], root,
+						 True, GrabModeAsync, GrabModeAsync);
 }
 
 #ifdef XINERAMA
@@ -1397,8 +1413,7 @@ void manage(Window w, XWindowAttributes * wa)
 	updatewmhints(c);
 	c->x = c->mon->mx + (c->mon->mw - WIDTH(c)) / 2;
 	c->y = c->mon->my + (c->mon->mh - HEIGHT(c)) / 2;
-	XSelectInput(dpy, w,
-				 EnterWindowMask | FocusChangeMask | PropertyChangeMask | StructureNotifyMask);
+	XSelectInput(dpy, w, FocusChangeMask | PropertyChangeMask | StructureNotifyMask);
 	grabbuttons(c, 0);
 	if (!c->isfloating)
 		c->isfloating = c->oldstate = trans != None || c->isfixed;
@@ -1422,10 +1437,18 @@ void manage(Window w, XWindowAttributes * wa)
 void mappingnotify(XEvent * e)
 {
 	XMappingEvent *ev = &e->xmapping;
+	Monitor *m;
+	Client *c;
 
 	XRefreshKeyboardMapping(ev);
-	if (ev->request == MappingKeyboard)
+	if (ev->request == MappingKeyboard || ev->request == MappingModifier)
+	{
+		updatenumlockmask();
 		grabkeys();
+		for (m = mons; m; m = m->next)
+			for (c = m->clients; c; c = c->next)
+				grabbuttons(c, c == selmon->sel);
+	}
 }
 
 void maprequest(XEvent * e)
@@ -1466,6 +1489,8 @@ void movemouse(const Arg * arg)
 	}
 	do
 	{
+		flushbars();
+		XFlush(dpy);
 		XMaskEvent(dpy, MOUSEMASK | ExposureMask | SubstructureRedirectMask, &ev);
 		switch (ev.type)
 		{
@@ -1609,7 +1634,6 @@ void resizeclient(Client * c, int x, int y, int w, int h)
 	}
 	XConfigureWindow(dpy, c->win, CWX | CWY | CWWidth | CWHeight | CWBorderWidth, &wc);
 	configure(c);
-	XSync(dpy, False);
 }
 
 void resizemouse(const Arg * arg)
@@ -1633,6 +1657,8 @@ void resizemouse(const Arg * arg)
 	XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, c->w + c->bw - 1, c->h + c->bw - 1);
 	do
 	{
+		flushbars();
+		XFlush(dpy);
 		XMaskEvent(dpy, MOUSEMASK | ExposureMask | SubstructureRedirectMask, &ev);
 		switch (ev.type)
 		{
@@ -1663,8 +1689,6 @@ void resizemouse(const Arg * arg)
 	while (ev.type != ButtonRelease);
 	XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, c->w + c->bw - 1, c->h + c->bw - 1);
 	XUngrabPointer(dpy, CurrentTime);
-	while (XCheckMaskEvent(dpy, EnterWindowMask, &ev))
-		;
 	if ((m = recttomon(c->x, c->y, c->w, c->h)) != selmon)
 	{
 		sendmon(c, m);
@@ -1676,7 +1700,6 @@ void resizemouse(const Arg * arg)
 void restack(Monitor * m)
 {
 	Client *c;
-	XEvent ev;
 	XWindowChanges wc;
 
 	drawbar(m);
@@ -1695,8 +1718,6 @@ void restack(Monitor * m)
 				wc.sibling = c->win;
 			}
 	}
-	XSync(dpy, False);
-	while (XCheckMaskEvent(dpy, EnterWindowMask, &ev));
 	if (m == selmon && (m->tagset[m->seltags] & m->sel->tags)
 		&& selmon->lt[selmon->sellt] != &layouts[2])
 		warp(m->sel);
@@ -1706,10 +1727,14 @@ void run(void)
 {
 	XEvent ev;
 	/* main event loop */
-	XSync(dpy, False);
-	while (running && !XNextEvent(dpy, &ev))
-		if (handler[ev.type])
+	while (running)
+	{
+		flushbars();
+		XFlush(dpy);
+		XNextEvent(dpy, &ev);
+		if (ev.type < LASTEvent && handler[ev.type])
 			handler[ev.type] (&ev);	/* call handler */
+	}
 }
 
 void runautostart(void)
@@ -2000,11 +2025,12 @@ void setup(void)
 	sw = DisplayWidth(dpy, screen);
 	sh = DisplayHeight(dpy, screen);
 	root = RootWindow(dpy, screen);
-	drw = drw_create(dpy, screen, root, sw, sh);
+	drw = drw_create(dpy, screen, root, sw, 1);
 	if (!drw_fontset_create(drw, fonts, LENGTH(fonts)))
 		die("no fonts could be loaded.");
 	lrpad = drw->fonts->h;
 	bh = drw->fonts->h + 6;
+	drw_resize(drw, sw, bh);
 	sp = sidepad;
 	vp = (topbar == 1) ? vertpad : -vertpad;
 	updategeom();
@@ -2052,10 +2078,11 @@ void setup(void)
 	/* select events */
 	wa.cursor = cursor[CurNormal]->cursor;
 	wa.event_mask =
-		SubstructureRedirectMask | SubstructureNotifyMask | ButtonPressMask | PointerMotionMask |
-		EnterWindowMask | LeaveWindowMask | StructureNotifyMask | PropertyChangeMask;
+		SubstructureRedirectMask | SubstructureNotifyMask | ButtonPressMask |
+		StructureNotifyMask | PropertyChangeMask;
 	XChangeWindowAttributes(dpy, root, CWEventMask | CWCursor, &wa);
 	XSelectInput(dpy, root, wa.event_mask);
+	updatenumlockmask();
 	grabkeys();
 	focus(NULL);
 }
