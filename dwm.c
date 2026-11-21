@@ -20,7 +20,9 @@
  *
  * To understand everything else, start reading main().
  */
+#include <ctype.h>
 #include <errno.h>
+#include <limits.h>
 #include <locale.h>
 #include <signal.h>
 #include <stdarg.h>
@@ -258,6 +260,7 @@ static void seturgent(Client * c, int urg);
 static void showhide(Client * c);
 static void sigchld(int unused);
 static void spawn(const Arg * arg);
+static int statusvalid(const char *text);
 static void tag(const Arg * arg);
 static void tagmon(const Arg * arg);
 static void tile(Monitor *);
@@ -815,12 +818,73 @@ void detachstack(Client * c)
 	}
 }
 
+int statusvalid(const char *text)
+{
+	const char *p, *end;
+	char *next;
+	long value;
+	int i, fields, command;
+
+	for (p = text; *p; p++)
+	{
+		if (*p != '^')
+			continue;
+		end = strchr(++p, '^');
+		if (!end || p == end)
+			return 0;
+		while (p < end)
+		{
+			command = *p++;
+			if (command == 'c' || command == 'b')
+			{
+				if (end - p < 7 || *p++ != '#')
+					return 0;
+				for (i = 0; i < 6; i++)
+					if (!isxdigit((unsigned char)*p++))
+						return 0;
+			}
+			else if (command == 'r' || command == 'f')
+			{
+				fields = command == 'r' ? 4 : 1;
+				for (i = 0; i < fields; i++)
+				{
+					if (p >= end || (!isdigit((unsigned char)*p) && *p != '-' && *p != '+'))
+						return 0;
+					errno = 0;
+					value = strtol(p, &next, 10);
+					if (next == p || next > end || errno == ERANGE ||
+						value < SHRT_MIN || value > USHRT_MAX ||
+						(command == 'r' && i >= 2 && value < 0))
+						return 0;
+					p = next;
+					if (i + 1 < fields && (p >= end || *p++ != ','))
+						return 0;
+				}
+			}
+			else if (command != 'd')
+				return 0;
+		}
+		p = end;
+	}
+	return 1;
+}
+
 int drawstatusbar(Monitor * m, int bh, char *stext)
 {
 	int ret, i, w, x, len;
 	short isCode = 0;
 	char *text;
 	char *p;
+
+	if (!statusvalid(stext))
+	{
+		w = TEXTW(stext) - lrpad;
+		x = m->ww - w - 2 * sp;
+		drw_setscheme(drw, scheme[SchemeNorm]);
+		drw_rect(drw, x, 0, w + 2 * sp, bh, 1, 1);
+		drw_text(drw, x + 1, 0, w, bh, 0, stext, 0);
+		return x;
+	}
 
 	len = strlen(stext) + 1;
 	if (!(text = (char *)malloc(sizeof(char) * len)))
