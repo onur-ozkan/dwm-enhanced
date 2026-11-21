@@ -130,6 +130,7 @@ struct Client
 	float mina, maxa;
 	int x, y, w, h;
 	int oldx, oldy, oldw, oldh;
+	int fsx, fsy, fsw, fsh;		/* geometry to restore after fullscreen */
 	int basew, baseh, incw, inch, maxw, maxh, minw, minh;
 	int bw, oldbw;
 	unsigned int tags;
@@ -218,12 +219,13 @@ static void focus(Client * c);
 static void focusin(XEvent * e);
 static void focusmon(const Arg * arg);
 static void focusstack(const Arg * arg);
-static Atom getatomprop(Client * c, Atom prop);
+static Atom *getatomprop(Client * c, Atom prop, unsigned long *count);
 static int getrootptr(int *x, int *y);
 static long getstate(Window w);
 static int gettextprop(Window w, Atom atom, char *text, unsigned int size);
 static void grabbuttons(Client * c, int focused);
 static void grabkeys(void);
+static int hasatomprop(Client * c, Atom prop, Atom atom);
 static void keypress(XEvent * e);
 static void killclient(const Arg * arg);
 static void manage(Window w, XWindowAttributes * wa);
@@ -1110,20 +1112,49 @@ void focusstack(const Arg * arg)
 	}
 }
 
-Atom getatomprop(Client * c, Atom prop)
+/* The caller must XFree the returned atom list. */
+Atom *getatomprop(Client * c, Atom prop, unsigned long *count)
 {
-	int di;
-	unsigned long dl;
+	int format;
+	unsigned long n, extra;
 	unsigned char *p = NULL;
-	Atom da, atom = None;
+	Atom type;
 
-	if (XGetWindowProperty(dpy, c->win, prop, 0L, sizeof atom, False, XA_ATOM,
-						   &da, &di, &dl, &dl, &p) == Success && p)
+	*count = 0;
+	if (XGetWindowProperty(dpy, c->win, prop, 0L, 32L, False, XA_ATOM,
+						   &type, &format, &n, &extra, &p) != Success)
+		return NULL;
+	if (type == XA_ATOM && format == 32 && extra)
 	{
-		atom = *(Atom *) p;
 		XFree(p);
+		p = NULL;
+		if (XGetWindowProperty(dpy, c->win, prop, 0L, 32L + (extra + 3) / 4,
+							   False, XA_ATOM, &type, &format, &n, &extra, &p) != Success)
+			return NULL;
 	}
-	return atom;
+	if (type != XA_ATOM || format != 32 || !n || extra || !p)
+	{
+		XFree(p);
+		return NULL;
+	}
+	*count = n;
+	return (Atom *)p;
+}
+
+int hasatomprop(Client * c, Atom prop, Atom atom)
+{
+	unsigned long i, n;
+	Atom *atoms = getatomprop(c, prop, &n);
+	int found = 0;
+
+	for (i = 0; i < n; i++)
+		if (atoms[i] == atom)
+		{
+			found = 1;
+			break;
+		}
+	XFree(atoms);
+	return found;
 }
 
 int getrootptr(int *x, int *y)
@@ -1750,6 +1781,9 @@ void scan(void)
 
 void sendmon(Client * c, Monitor * m)
 {
+	int dx = m->mx - c->mon->mx;
+	int dy = m->my - c->mon->my;
+
 	if (c->mon == m)
 		return;
 	unfocus(c, 1);
@@ -1757,6 +1791,14 @@ void sendmon(Client * c, Monitor * m)
 	detachstack(c);
 	c->mon = m;
 	c->tags = m->tagset[m->seltags];	/* assign tags of target monitor */
+	if (c->isfullscreen)
+	{
+		c->fsw = MAX(1, MIN(c->fsw, m->ww - 2 * c->oldbw));
+		c->fsh = MAX(1, MIN(c->fsh, m->wh - 2 * c->oldbw));
+		c->fsx = MAX(m->wx, MIN(c->fsx + dx, m->wx + m->ww - c->fsw - 2 * c->oldbw));
+		c->fsy = MAX(m->wy, MIN(c->fsy + dy, m->wy + m->wh - c->fsh - 2 * c->oldbw));
+		resizeclient(c, m->mx, m->my, m->mw, m->mh);
+	}
 	attach(c);
 	attachstack(c);
 	focus(NULL);
@@ -1810,10 +1852,30 @@ void setfocus(Client * c)
 
 void setfullscreen(Client * c, int fullscreen)
 {
-	if (fullscreen && !c->isfullscreen)
+	unsigned long i, n, count = 0;
+	Atom *states, *updated;
+
+	fullscreen = !!fullscreen;
+	if (fullscreen == c->isfullscreen)
+		return;
+	states = getatomprop(c, netatom[NetWMState], &n);
+	updated = ecalloc(n + 1, sizeof(Atom));
+	for (i = 0; i < n; i++)
+		if (states[i] != netatom[NetWMFullscreen])
+			updated[count++] = states[i];
+	if (fullscreen)
+		updated[count++] = netatom[NetWMFullscreen];
+	XChangeProperty(dpy, c->win, netatom[NetWMState], XA_ATOM, 32,
+					PropModeReplace, (unsigned char *)updated, count);
+	XFree(states);
+	free(updated);
+
+	if (fullscreen)
 	{
-		XChangeProperty(dpy, c->win, netatom[NetWMState], XA_ATOM, 32,
-						PropModeReplace, (unsigned char *)&netatom[NetWMFullscreen], 1);
+		c->fsx = c->x;
+		c->fsy = c->y;
+		c->fsw = c->w;
+		c->fsh = c->h;
 		c->isfullscreen = 1;
 		c->oldstate = c->isfloating;
 		c->oldbw = c->bw;
@@ -1822,18 +1884,12 @@ void setfullscreen(Client * c, int fullscreen)
 		resizeclient(c, c->mon->mx, c->mon->my, c->mon->mw, c->mon->mh);
 		XRaiseWindow(dpy, c->win);
 	}
-	else if (!fullscreen && c->isfullscreen)
+	else
 	{
-		XChangeProperty(dpy, c->win, netatom[NetWMState], XA_ATOM, 32,
-						PropModeReplace, (unsigned char *)0, 0);
 		c->isfullscreen = 0;
 		c->isfloating = c->oldstate;
 		c->bw = c->oldbw;
-		c->x = c->oldx;
-		c->y = c->oldy;
-		c->w = c->oldw;
-		c->h = c->oldh;
-		resizeclient(c, c->x, c->y, c->w, c->h);
+		resizeclient(c, c->fsx, c->fsy, c->fsw, c->fsh);
 		arrange(c->mon);
 	}
 }
@@ -2408,12 +2464,9 @@ void updatetitle(Client * c)
 
 void updatewindowtype(Client * c)
 {
-	Atom state = getatomprop(c, netatom[NetWMState]);
-	Atom wtype = getatomprop(c, netatom[NetWMWindowType]);
-
-	if (state == netatom[NetWMFullscreen])
+	if (hasatomprop(c, netatom[NetWMState], netatom[NetWMFullscreen]))
 		setfullscreen(c, 1);
-	if (wtype == netatom[NetWMWindowTypeDialog])
+	if (hasatomprop(c, netatom[NetWMWindowType], netatom[NetWMWindowTypeDialog]))
 		c->isfloating = 1;
 }
 
