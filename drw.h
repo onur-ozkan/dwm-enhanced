@@ -1,5 +1,8 @@
 /* See LICENSE file for copyright and license details. */
 
+#ifndef DRW_H
+#define DRW_H
+
 typedef struct
 {
 	Cursor cursor;
@@ -28,6 +31,8 @@ typedef struct
 	GC gc;
 	Clr *scheme;
 	Fnt *fonts;
+	FcChar32 nomatches[64];
+	unsigned int nomatchcount, nomatchnext;
 } Drw;
 
 /* Drawable abstraction */
@@ -61,3 +66,5 @@ int drw_text(Drw * drw, int x, int y, unsigned int w, unsigned int h, unsigned i
 
 /* Map functions */
 void drw_map(Drw * drw, Window win, int x, int y, unsigned int w, unsigned int h);
+
+#endif /* DRW_H */

@@ -173,6 +173,7 @@ Fnt *drw_fontset_create(Drw * drw, const char *fonts[], size_t fontcount)
 
 	if (!drw || !fonts)
 		return NULL;
+	drw->nomatchcount = drw->nomatchnext = 0;
 
 	for (i = 1; i <= fontcount; i++)
 	{
@@ -223,7 +224,10 @@ Clr *drw_scm_create(Drw * drw, const char *clrnames[], size_t clrcount)
 void drw_setfontset(Drw * drw, Fnt * set)
 {
 	if (drw)
+	{
 		drw->fonts = set;
+		drw->nomatchcount = drw->nomatchnext = 0;
+	}
 }
 
 void drw_setscheme(Drw * drw, Clr * scm)
@@ -243,16 +247,43 @@ void drw_rect(Drw * drw, int x, int y, unsigned int w, unsigned int h, int fille
 		XDrawRectangle(drw->dpy, drw->drawable, drw->gc, x, y, w - 1, h - 1);
 }
 
+/* Find the longest fitting prefix without splitting a UTF-8 character. */
+static size_t textfit(Fnt * font, const char *text, size_t len, unsigned int available,
+					 unsigned int *width)
+{
+	size_t lo = 0, hi = len, mid;
+	unsigned int w;
+
+	while (lo < hi)
+	{
+		mid = lo + (hi - lo + 1) / 2;
+		while (mid < hi && ((unsigned char)text[mid] & 0xc0) == 0x80)
+			mid++;
+		drw_font_getexts(font, text, mid, &w, NULL);
+		if (w <= available)
+			lo = mid;
+		else
+		{
+			hi = mid - 1;
+			while (hi > lo && ((unsigned char)text[hi] & 0xc0) == 0x80)
+				hi--;
+		}
+	}
+	*width = 0;
+	if (lo)
+		drw_font_getexts(font, text, lo, width, NULL);
+	return lo;
+}
+
 int
 drw_text(Drw * drw, int x, int y, unsigned int w, unsigned int h, unsigned int lpad,
 		 const char *text, int invert)
 {
-	char buf[1024];
 	int ty;
-	unsigned int ew;
+	unsigned int ew, ellipsisw;
 	XftDraw *d = NULL;
 	Fnt *usedfont, *curfont, *nextfont;
-	size_t i, len;
+	size_t i, len, ellipsislen;
 	int utf8strlen, utf8charlen, render = x || y || w || h;
 	long utf8codepoint = 0;
 	const char *utf8str;
@@ -273,6 +304,8 @@ drw_text(Drw * drw, int x, int y, unsigned int w, unsigned int h, unsigned int l
 	{
 		XSetForeground(drw->dpy, drw->gc, drw->scheme[invert ? ColFg : ColBg].pixel);
 		XFillRectangle(drw->dpy, drw->drawable, drw->gc, x, y, w, h);
+		if (w <= lpad)
+			return x + w;
 		d = XftDrawCreate(drw->dpy, drw->drawable,
 						  DefaultVisual(drw->dpy, drw->screen),
 						  DefaultColormap(drw->dpy, drw->screen));
@@ -316,27 +349,34 @@ drw_text(Drw * drw, int x, int y, unsigned int w, unsigned int h, unsigned int l
 		if (utf8strlen)
 		{
 			drw_font_getexts(usedfont, utf8str, utf8strlen, &ew, NULL);
-			/* shorten text if necessary */
-			for (len = MIN(utf8strlen, sizeof(buf) - 1); len && ew > w; len--)
-				drw_font_getexts(usedfont, utf8str, len, &ew, NULL);
-
-			if (len)
+			len = utf8strlen;
+			ellipsislen = ellipsisw = 0;
+			if (render && ew > w)
 			{
-				memcpy(buf, utf8str, len);
-				buf[len] = '\0';
-				if (len < utf8strlen)
-					for (i = len; i && i > len - 3; buf[--i] = '.')
-						;		/* NOP */
-
-				if (render)
+				for (ellipsislen = 3; ellipsislen; ellipsislen--)
 				{
-					ty = y + (h - usedfont->h) / 2 + usedfont->xfont->ascent;
-					XftDrawStringUtf8(d, &drw->scheme[invert ? ColBg : ColFg],
-									  usedfont->xfont, x, ty, (XftChar8 *) buf, len);
+					drw_font_getexts(usedfont, "...", ellipsislen, &ellipsisw, NULL);
+					if (ellipsisw <= w)
+						break;
 				}
-				x += ew;
-				w -= ew;
+				if (!ellipsislen)
+					ellipsisw = 0;
+				len = textfit(usedfont, utf8str, utf8strlen, w - ellipsisw, &ew);
 			}
+			if (render)
+			{
+				ty = y + ((int)h - (int)usedfont->h) / 2 + usedfont->xfont->ascent;
+				if (len)
+					XftDrawStringUtf8(d, &drw->scheme[invert ? ColBg : ColFg],
+									  usedfont->xfont, x, ty, (XftChar8 *)utf8str, len);
+				if (ellipsislen)
+					XftDrawStringUtf8(d, &drw->scheme[invert ? ColBg : ColFg],
+									  usedfont->xfont, x + ew, ty, (XftChar8 *)"...", ellipsislen);
+			}
+			x += ew + ellipsisw;
+			w -= ew + ellipsisw;
+			if (render && len < (size_t)utf8strlen)
+				break;
 		}
 
 		if (!*text)
@@ -352,6 +392,12 @@ drw_text(Drw * drw, int x, int y, unsigned int w, unsigned int h, unsigned int l
 		{
 			/* Regardless of whether or not a fallback font is found, the character must be drawn. */
 			charexists = 1;
+			usedfont = drw->fonts;
+			for (i = 0; i < drw->nomatchcount; i++)
+				if (drw->nomatches[i] == (FcChar32)utf8codepoint)
+					break;
+			if (i < drw->nomatchcount)
+				continue;
 
 			fccharset = FcCharSetCreate();
 			FcCharSetAddChar(fccharset, utf8codepoint);
@@ -382,6 +428,8 @@ drw_text(Drw * drw, int x, int y, unsigned int w, unsigned int h, unsigned int l
 					for (curfont = drw->fonts; curfont->next; curfont = curfont->next)
 						;		/* NOP */
 					curfont->next = usedfont;
+					charexists = 0;
+					continue;
 				}
 				else
 				{
@@ -389,6 +437,11 @@ drw_text(Drw * drw, int x, int y, unsigned int w, unsigned int h, unsigned int l
 					usedfont = drw->fonts;
 				}
 			}
+			drw->nomatches[drw->nomatchnext] = utf8codepoint;
+			drw->nomatchnext = (drw->nomatchnext + 1) %
+				(sizeof drw->nomatches / sizeof drw->nomatches[0]);
+			if (drw->nomatchcount < sizeof drw->nomatches / sizeof drw->nomatches[0])
+				drw->nomatchcount++;
 		}
 	}
 	if (d)
