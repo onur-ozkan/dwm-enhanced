@@ -206,6 +206,7 @@ static void checkotherwm(void);
 static void cleanup(void);
 static void cleanupmon(Monitor * mon);
 static void clientmessage(XEvent * e);
+static void coalescemotion(XEvent * e);
 static void configure(Client * c);
 static void configurenotify(XEvent * e);
 static void configurerequest(XEvent * e);
@@ -1464,13 +1465,26 @@ void maprequest(XEvent * e)
 		manage(ev->window, &wa);
 }
 
+void coalescemotion(XEvent * e)
+{
+	XEvent next;
+
+	/* Skip stale positions without crossing a release or any other queued event. */
+	while (XEventsQueued(dpy, QueuedAlready))
+	{
+		XPeekEvent(dpy, &next);
+		if (next.type != MotionNotify || next.xmotion.window != e->xmotion.window)
+			break;
+		XNextEvent(dpy, e);
+	}
+}
+
 void movemouse(const Arg * arg)
 {
-	int x, y, ocx, ocy, nx, ny;
+	int x, y, ocx, ocy, nx, ny, px, py;
 	Client *c;
 	Monitor *m;
 	XEvent ev;
-	Time lasttime = 0;
 
 	if (!(c = selmon->sel))
 		return;
@@ -1492,6 +1506,8 @@ void movemouse(const Arg * arg)
 		flushbars();
 		XFlush(dpy);
 		XMaskEvent(dpy, MOUSEMASK | ExposureMask | SubstructureRedirectMask, &ev);
+		if (ev.type == MotionNotify)
+			coalescemotion(&ev);
 		switch (ev.type)
 		{
 		case ConfigureRequest:
@@ -1500,12 +1516,11 @@ void movemouse(const Arg * arg)
 			handler[ev.type] (&ev);
 			break;
 		case MotionNotify:
-			if ((ev.xmotion.time - lasttime) <= (1000 / 60))
-				continue;
-			lasttime = ev.xmotion.time;
-
-			nx = ocx + (ev.xmotion.x - x);
-			ny = ocy + (ev.xmotion.y - y);
+		case ButtonRelease:
+			px = ev.type == MotionNotify ? ev.xmotion.x_root : ev.xbutton.x_root;
+			py = ev.type == MotionNotify ? ev.xmotion.y_root : ev.xbutton.y_root;
+			nx = ocx + (px - x);
+			ny = ocy + (py - y);
 			if (abs(selmon->wx - nx) < snap)
 				nx = selmon->wx;
 			else if (abs((selmon->wx + selmon->ww) - (nx + WIDTH(c))) < snap)
@@ -1638,11 +1653,10 @@ void resizeclient(Client * c, int x, int y, int w, int h)
 
 void resizemouse(const Arg * arg)
 {
-	int ocx, ocy, nw, nh;
+	int ocx, ocy, nw, nh, px, py;
 	Client *c;
 	Monitor *m;
 	XEvent ev;
-	Time lasttime = 0;
 
 	if (!(c = selmon->sel))
 		return;
@@ -1660,6 +1674,8 @@ void resizemouse(const Arg * arg)
 		flushbars();
 		XFlush(dpy);
 		XMaskEvent(dpy, MOUSEMASK | ExposureMask | SubstructureRedirectMask, &ev);
+		if (ev.type == MotionNotify)
+			coalescemotion(&ev);
 		switch (ev.type)
 		{
 		case ConfigureRequest:
@@ -1668,12 +1684,11 @@ void resizemouse(const Arg * arg)
 			handler[ev.type] (&ev);
 			break;
 		case MotionNotify:
-			if ((ev.xmotion.time - lasttime) <= (1000 / 60))
-				continue;
-			lasttime = ev.xmotion.time;
-
-			nw = MAX(ev.xmotion.x - ocx - 2 * c->bw + 1, 1);
-			nh = MAX(ev.xmotion.y - ocy - 2 * c->bw + 1, 1);
+		case ButtonRelease:
+			px = ev.type == MotionNotify ? ev.xmotion.x_root : ev.xbutton.x_root;
+			py = ev.type == MotionNotify ? ev.xmotion.y_root : ev.xbutton.y_root;
+			nw = MAX(px - ocx - 2 * c->bw + 1, 1);
+			nh = MAX(py - ocy - 2 * c->bw + 1, 1);
 			if (c->mon->wx + nw >= selmon->wx && c->mon->wx + nw <= selmon->wx + selmon->ww
 				&& c->mon->wy + nh >= selmon->wy && c->mon->wy + nh <= selmon->wy + selmon->wh)
 			{
