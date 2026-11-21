@@ -2,6 +2,9 @@ void movestack(const Arg * arg)
 {
 	Client *c = NULL, *p = NULL, *pc = NULL, *i;
 
+	if (!selmon->sel)
+		return;
+
 	if (arg->i > 0)
 	{
 		/* find the client after selmon->sel */

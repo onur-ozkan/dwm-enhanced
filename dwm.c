@@ -683,7 +683,7 @@ void configurerequest(XEvent * e)
 	{
 		if (ev->value_mask & CWBorderWidth)
 			c->bw = ev->border_width;
-		else if (c->isfloating || !selmon->lt[selmon->sellt]->arrange)
+		else if (c->isfloating || !c->mon->lt[c->mon->sellt]->arrange)
 		{
 			m = c->mon;
 			if (ev->value_mask & CWX)
@@ -1365,7 +1365,10 @@ void movemouse(const Arg * arg)
 					 None, cursor[CurMove]->cursor, CurrentTime) != GrabSuccess)
 		return;
 	if (!getrootptr(&x, &y))
+	{
+		XUngrabPointer(dpy, CurrentTime);
 		return;
+	}
 	do
 	{
 		XMaskEvent(dpy, MOUSEMASK | ExposureMask | SubstructureRedirectMask, &ev);
@@ -1882,9 +1885,9 @@ void setup(void)
 		die("no fonts could be loaded.");
 	lrpad = drw->fonts->h;
 	bh = drw->fonts->h + 6;
-	updategeom();
 	sp = sidepad;
 	vp = (topbar == 1) ? vertpad : -vertpad;
+	updategeom();
 
 	/* init atoms */
 	utf8string = XInternAtom(dpy, "UTF8_STRING", False);
@@ -1913,8 +1916,6 @@ void setup(void)
 	/* init bars */
 	updatebars();
 	updatestatus();
-	for (Monitor * m = mons; m; m = m->next)
-		updatebarpos(m);
 
 	/* supporting window for NetWMCheck */
 	wmcheckwin = XCreateSimpleWindow(dpy, root, 0, 0, 1, 1, 0, 0, 0);
@@ -2096,14 +2097,15 @@ void toggleview(const Arg * arg)
 	{
 		selmon->tagset[selmon->seltags] = newtagset;
 
-		if (newtagset == ~0)
+		if (newtagset == TAGMASK)
 		{
 			selmon->pertag->prevtag = selmon->pertag->curtag;
 			selmon->pertag->curtag = 0;
 		}
 
 		/* test if the user did not select the same tag */
-		if (!(newtagset & 1 << (selmon->pertag->curtag - 1)))
+		else if (!selmon->pertag->curtag ||
+				 !(newtagset & 1U << (selmon->pertag->curtag - 1)))
 		{
 			selmon->pertag->prevtag = selmon->pertag->curtag;
 			for (i = 0; !(newtagset & 1 << i); i++);
@@ -2307,6 +2309,7 @@ int updategeom(void)
 			dirty = 1;
 			mons->mw = mons->ww = sw;
 			mons->mh = mons->wh = sh;
+			updatebarpos(mons);
 		}
 	}
 	if (dirty)
@@ -2449,7 +2452,7 @@ void view(const Arg * arg)
 
 		selmon->pertag->prevtag = selmon->pertag->curtag;
 
-		if (arg->ui == ~0)
+		if ((arg->ui & TAGMASK) == TAGMASK)
 			selmon->pertag->curtag = 0;
 		else
 		{
