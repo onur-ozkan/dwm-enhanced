@@ -12,6 +12,8 @@ static const int vertpad = 9;	/* vertical padding of bar */
 static const int sidepad = 13;	/* horizontal padding of bar */
 static const Bool viewontag = True;	/* Switch view on tag switch */
 static const int focusonwheel = 0;
+static const unsigned int switcherwidth = 760;
+static const unsigned int switcherrows = 10;
 static const char *fonts[] = { "RobotoMono Nerd Font:size=10.50" };
 
 static const char dmenufont[] = "Roboto Mono:size=10.50";
@@ -78,7 +80,7 @@ static Key keys[] = {
 	{MODKEY, XK_h, setmfact, {.f = -0.05}},
 	{MODKEY, XK_l, setmfact, {.f = +0.05}},
 	{MODKEY, XK_Return, zoom, {0}},
-	{MODKEY, XK_Tab, view, {0}},
+	{MODKEY, XK_Tab, switcheropen, {0}},
 	{MODKEY, XK_comma, focusmon, {.i = -1}},
 	{MODKEY, XK_period, focusmon, {.i = +1}},
 	{MODKEY | ShiftMask, XK_comma, tagmon, {.i = -1}},

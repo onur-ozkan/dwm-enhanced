@@ -37,7 +37,7 @@ Shortcuts
 | **ctrl + return**							| open dmenu											                        |
 | **ctrl + space**							| search on browser											                    |
 | **alt + f**								| toggle fullscreen                     									    |
-| **alt + tab**								| switch between previous-current tag                     						|
+| **alt + tab** | open window switcher |
 | **alt + space**							| switch keyboard layout between us/tr											|
 | **alt + shift + return**					| open terminal										                            |
 | **alt + b**								| hide statusbar									                            |

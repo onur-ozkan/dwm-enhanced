@@ -61,6 +61,7 @@ static size_t utf8decode(const char *c, long *u, size_t clen)
 Drw *drw_create(Display * dpy, int screen, Window root, unsigned int w, unsigned int h)
 {
 	Drw *drw = ecalloc(1, sizeof(Drw));
+	XGCValues values = {.graphics_exposures = False};
 
 	drw->dpy = dpy;
 	drw->screen = screen;
@@ -68,7 +69,7 @@ Drw *drw_create(Display * dpy, int screen, Window root, unsigned int w, unsigned
 	drw->w = w;
 	drw->h = h;
 	drw->drawable = XCreatePixmap(dpy, root, w, h, DefaultDepth(dpy, screen));
-	drw->gc = XCreateGC(dpy, root, 0, NULL);
+	drw->gc = XCreateGC(dpy, root, GCGraphicsExposures, &values);
 	XSetLineAttributes(dpy, drw->gc, 1, LineSolid, CapButt, JoinMiter);
 
 	return drw;

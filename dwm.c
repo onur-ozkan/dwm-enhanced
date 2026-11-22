@@ -129,6 +129,7 @@ typedef struct Client Client;
 struct Client
 {
 	char name[256];
+	char app[256];
 	float mina, maxa;
 	int x, y, w, h;
 	int oldx, oldy, oldw, oldh;
@@ -137,6 +138,7 @@ struct Client
 	int bw, oldbw;
 	unsigned int tags;
 	int isfixed, isfloating, isurgent, neverfocus, oldstate, isfullscreen;
+	int isworkspacefullscreen;
 	Client *next;
 	Client *snext;
 	Monitor *mon;
@@ -265,6 +267,7 @@ static void showhide(Client * c);
 static void sigchld(int unused);
 static void spawn(const Arg * arg);
 static int statusvalid(const char *text);
+static void switcheropen(const Arg *arg);
 static void tag(const Arg * arg);
 static void tagmon(const Arg * arg);
 static void tile(Monitor *);
@@ -279,6 +282,7 @@ static void unmapnotify(XEvent * e);
 static void updatebarpos(Monitor * m);
 static void updatebars(void);
 static void updateclientlist(void);
+static void updateclass(Client *c);
 static int updategeom(void);
 static void updatenumlockmask(void);
 static void updatesizehints(Client * c);
@@ -287,6 +291,7 @@ static void updatetitle(Client * c);
 static void updatewindowtype(Client * c);
 static void updatewmhints(Client * c);
 static void view(const Arg * arg);
+static void viewclient(const Arg *arg, Client *c);
 static void warp(const Client * c);
 static Client *wintoclient(Window w);
 static Monitor *wintomon(Window w);
@@ -337,6 +342,7 @@ static Window root, wmcheckwin;
 
 /* configuration, allows nested code to access above variables */
 #include "config.h"
+#include "switcher.c"
 
 struct Pertag
 {
@@ -346,6 +352,7 @@ struct Pertag
 	unsigned int sellts[LENGTH(tags) + 1];
 	const Layout *ltidxs[LENGTH(tags) + 1][2];
 	int showbars[LENGTH(tags) + 1];
+	int fullscreens[LENGTH(tags) + 1];
 };
 
 /* compile-time check if all tags fit into an unsigned int bit array. */
@@ -571,6 +578,7 @@ void cleanup(void)
 	Monitor *m;
 	size_t i;
 
+	switcherclose();
 	view(&a);
 	selmon->lt[selmon->sellt] = &foo;
 	for (m = mons; m; m = m->next)
@@ -660,6 +668,7 @@ void configurenotify(XEvent * e)
 	/* TODO: updategeom handling sucks, needs to be simplified */
 	if (ev->window == root)
 	{
+		switcherclose();
 		dirty = (sw != ev->width || sh != ev->height);
 		sw = ev->width;
 		sh = ev->height;
@@ -1118,6 +1127,9 @@ void expose(XEvent * e)
 
 void focus(Client * c)
 {
+	Client *i;
+	int fullscreen;
+
 	if (!c || !ISVISIBLE(c))
 		for (c = selmon->stack; c && !ISVISIBLE(c); c = c->snext)
 			;
@@ -1133,7 +1145,6 @@ void focus(Client * c)
 		attachstack(c);
 		grabbuttons(c, 1);
 		XSetWindowBorder(dpy, c->win, scheme[SchemeSel][ColBorder].pixel);
-		setfocus(c);
 	}
 	else
 	{
@@ -1141,6 +1152,20 @@ void focus(Client * c)
 		XDeleteProperty(dpy, root, netatom[NetActiveWindow]);
 	}
 	selmon->sel = c;
+	fullscreen = selmon->pertag->fullscreens[selmon->pertag->curtag];
+	if (c && fullscreen)
+	{
+		c->isworkspacefullscreen = 1;
+		setfullscreen(c, 1);
+	}
+	for (i = selmon->clients; i; i = i->next)
+		if (i->isworkspacefullscreen && (!fullscreen || !ISVISIBLE(i)))
+		{
+			i->isworkspacefullscreen = 0;
+			setfullscreen(i, 0);
+		}
+	if (c)
+		setfocus(c);
 	drawbars();
 }
 
@@ -1383,6 +1408,7 @@ void manage(Window w, XWindowAttributes * wa)
 	c->oldbw = wa->border_width;
 
 	updatetitle(c);
+	updateclass(c);
 	if (XGetTransientForHint(dpy, w, &trans) && (t = wintoclient(trans)))
 	{
 		c->mon = t->mon;
@@ -1427,12 +1453,19 @@ void manage(Window w, XWindowAttributes * wa)
 	XMoveResizeWindow(dpy, c->win, c->x + 2 * sw, c->y, c->w, c->h);	/* some windows require
 																		   this */
 	setclientstate(c, NormalState);
-	if (c->mon == selmon)
+	if (!switcher.win && c->mon == selmon)
 		unfocus(selmon->sel, 0);
-	c->mon->sel = c;
+	if (!switcher.win)
+		c->mon->sel = c;
 	arrange(c->mon);
 	XMapWindow(dpy, c->win);
-	focus(NULL);
+	if (!switcher.win)
+		focus(NULL);
+	else if (c->mon == switcher.mon)
+	{
+		XRaiseWindow(dpy, switcher.win);
+		switcherrefresh();
+	}
 }
 
 void mappingnotify(XEvent * e)
@@ -1570,13 +1603,19 @@ void propertynotify(XEvent * e)
 
 	if ((ev->window == root) && (ev->atom == XA_WM_NAME))
 		updatestatus();
-	else if (ev->state == PropertyDelete)
+	else if (ev->state == PropertyDelete && ev->atom != XA_WM_CLASS
+			 && ev->atom != XA_WM_NAME && ev->atom != netatom[NetWMName])
 		return;					/* ignore */
 	else if ((c = wintoclient(ev->window)))
 	{
 		switch (ev->atom)
 		{
 		default:
+			break;
+		case XA_WM_CLASS:
+			updateclass(c);
+			if (switcher.win && c->mon == switcher.mon)
+				switcherrefresh();
 			break;
 		case XA_WM_TRANSIENT_FOR:
 			if (!c->isfloating && (XGetTransientForHint(dpy, c->win, &trans)) &&
@@ -1596,6 +1635,8 @@ void propertynotify(XEvent * e)
 			updatetitle(c);
 			if (c == c->mon->sel)
 				drawbar(c->mon);
+			if (switcher.win && c->mon == switcher.mon)
+				switcherrefresh();
 		}
 		if (ev->atom == netatom[NetWMWindowType])
 			updatewindowtype(c);
@@ -1747,6 +1788,8 @@ void run(void)
 		flushbars();
 		XFlush(dpy);
 		XNextEvent(dpy, &ev);
+		if (switcherevent(&ev))
+			continue;
 		if (ev.type < LASTEvent && handler[ev.type])
 			handler[ev.type] (&ev);	/* call handler */
 	}
@@ -1987,6 +2030,8 @@ void setfullscreen(Client * c, int fullscreen)
 		c->isfloating = 1;
 		resizeclient(c, c->mon->mx, c->mon->my, c->mon->mw, c->mon->mh);
 		XRaiseWindow(dpy, c->win);
+		if (switcher.win)
+			XRaiseWindow(dpy, switcher.win);
 	}
 	else
 	{
@@ -2232,7 +2277,10 @@ void togglefloating(const Arg * arg)
 void togglefullscr(const Arg * arg)
 {
 	if (selmon->sel)
-		setfullscreen(selmon->sel, !selmon->sel->isfullscreen);
+	{
+		selmon->pertag->fullscreens[selmon->pertag->curtag] ^= 1;
+		focus(selmon->sel);
+	}
 }
 
 void toggletag(const Arg * arg)
@@ -2324,10 +2372,15 @@ void unmanage(Client * c, int destroyed)
 		XSetErrorHandler(xerror);
 		XUngrabServer(dpy);
 	}
+	if (m->sel == c)
+		m->sel = NULL;
 	free(c);
-	focus(NULL);
+	if (!switcher.win || !selmon->sel)
+		focus(NULL);
 	updateclientlist();
 	arrange(m);
+	if (switcher.win && m == switcher.mon)
+		switcherrefresh();
 }
 
 void unmapnotify(XEvent * e)
@@ -2560,6 +2613,19 @@ void updatestatus(void)
 	drawbar(selmon);
 }
 
+void updateclass(Client *c)
+{
+	XClassHint hint = {NULL, NULL};
+
+	XGetClassHint(dpy, c->win, &hint);
+	snprintf(c->app, sizeof c->app, "%s",
+			 hint.res_class ? hint.res_class : (hint.res_name ? hint.res_name : "Window"));
+	if (hint.res_name)
+		XFree(hint.res_name);
+	if (hint.res_class)
+		XFree(hint.res_class);
+}
+
 void updatetitle(Client * c)
 {
 	if (!gettextprop(c->win, netatom[NetWMName], c->name, sizeof c->name))
@@ -2599,11 +2665,23 @@ void updatewmhints(Client * c)
 
 void view(const Arg * arg)
 {
+	viewclient(arg, NULL);
+}
+
+void viewclient(const Arg *arg, Client *c)
+{
 	int i;
 	unsigned int tmptag;
 
 	if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags])
+	{
+		if (c)
+		{
+			focus(c);
+			restack(selmon);
+		}
 		return;
+	}
 	selmon->seltags ^= 1;		/* toggle sel tagset */
 	if (arg->ui & TAGMASK)
 	{
@@ -2636,7 +2714,7 @@ void view(const Arg * arg)
 	if (selmon->showbar != selmon->pertag->showbars[selmon->pertag->curtag])
 		togglebar(NULL);
 
-	focus(NULL);
+	focus(c);
 	arrange(selmon);
 }
 
