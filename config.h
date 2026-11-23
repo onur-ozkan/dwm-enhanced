@@ -33,6 +33,9 @@ static const char *colors[][3] = {
 	[SchemeRed] = {col_red, col_soft_black, col_red},
 	[SchemeBlue] = {col_blue, col_soft_black, col_blue},
 	[SchemeGreen] = {col_green, col_soft_black, col_green},
+	[SchemeSwitcherWorkspace] = {col_dark_yellow, col_soft_black, col_dark_yellow},
+	[SchemeSwitcherFilter] = {col_green, col_soft_black, col_green},
+	[SchemeSwitcherBorder] = {col_dirty_white, col_soft_black, col_white},
 };
 
 /* tagging */
@@ -81,6 +84,7 @@ static Key keys[] = {
 	{MODKEY, XK_l, setmfact, {.f = +0.05}},
 	{MODKEY, XK_Return, zoom, {0}},
 	{MODKEY, XK_Tab, switcheropen, {0}},
+	{MODKEY | ShiftMask, XK_Tab, switcheropen, {0}},
 	{MODKEY, XK_comma, focusmon, {.i = -1}},
 	{MODKEY, XK_period, focusmon, {.i = +1}},
 	{MODKEY | ShiftMask, XK_comma, tagmon, {.i = -1}},

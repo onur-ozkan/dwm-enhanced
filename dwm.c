@@ -73,7 +73,10 @@ enum
 	SchemeSel,
 	SchemeRed,
 	SchemeBlue,
-	SchemeGreen
+	SchemeGreen,
+	SchemeSwitcherWorkspace,
+	SchemeSwitcherFilter,
+	SchemeSwitcherBorder
 };								/* color schemes */
 enum
 {
@@ -1787,6 +1790,7 @@ void run(void)
 	{
 		flushbars();
 		XFlush(dpy);
+		switcherfinish();
 		XNextEvent(dpy, &ev);
 		if (switcherevent(&ev))
 			continue;
