@@ -56,6 +56,8 @@
 #define MOUSEMASK (BUTTONMASK | PointerMotionMask)
 #define WIDTH(X) ((X)->w + 2 * (X)->bw)
 #define HEIGHT(X) ((X)->h + 2 * (X)->bw)
+#define BARWIDTH(M) MAX(1, (M)->ww - 2 * (sp + barborderpx))
+#define BARHEIGHT (bh + 2 * barborderpx)
 #define TAGMASK ((1 << LENGTH(tags)) - 1)
 #define TEXTW(X) (drw_fontset_getwidth(drw, (X)) + lrpad)
 
@@ -678,7 +680,7 @@ void configurenotify(XEvent * e)
 				for (c = m->clients; c; c = c->next)
 					if (c->isfullscreen)
 						resizeclient(c, m->mx, m->my, m->mw, m->mh);
-				XMoveResizeWindow(dpy, m->barwin, m->wx + sp, m->by + vp, m->ww - 2 * sp, bh);
+				XMoveResizeWindow(dpy, m->barwin, m->wx + sp, m->by + vp, BARWIDTH(m), bh);
 
 			}
 			focus(NULL);
@@ -696,9 +698,7 @@ void configurerequest(XEvent * e)
 
 	if ((c = wintoclient(ev->window)))
 	{
-		if (ev->value_mask & CWBorderWidth)
-			c->bw = ev->border_width;
-		else if (c->isfloating || !c->mon->lt[c->mon->sellt]->arrange)
+		if (c->isfloating || !c->mon->lt[c->mon->sellt]->arrange)
 		{
 			m = c->mon;
 			if (ev->value_mask & CWX)
@@ -713,7 +713,8 @@ void configurerequest(XEvent * e)
 				c->x = m->mx + (m->mw / 2 - WIDTH(c) / 2);	/* center in x direction */
 			if ((c->y + c->h) > m->my + m->mh && c->isfloating)
 				c->y = m->my + (m->mh / 2 - HEIGHT(c) / 2);	/* center in y direction */
-			if ((ev->value_mask & (CWX | CWY)) && !(ev->value_mask & (CWWidth | CWHeight)))
+			if ((ev->value_mask & CWBorderWidth) ||
+				((ev->value_mask & (CWX | CWY)) && !(ev->value_mask & (CWWidth | CWHeight))))
 				configure(c);
 			if (ISVISIBLE(c))
 				XMoveResizeWindow(dpy, c->win, c->x, c->y, c->w, c->h);
@@ -901,7 +902,7 @@ int drawstatusbar(Monitor * m, int bh, char *stext)
 	if (w == INT_MIN)
 	{
 		w = TEXTW(stext) - lrpad;
-		x = m->ww - w - 2 * sp;
+		x = BARWIDTH(m) - w - 2 * sp;
 		drw_setscheme(drw, scheme[SchemeNorm]);
 		drw_rect(drw, x, 0, w + 2 * sp, bh, 1, 1);
 		drw_text(drw, x + 1, 0, w, bh, 0, stext, 0);
@@ -909,7 +910,7 @@ int drawstatusbar(Monitor * m, int bh, char *stext)
 	else
 	{
 		w += 2 * sp;
-		x = m->ww - w;
+		x = BARWIDTH(m) - w;
 		drw_setscheme(drw, scheme[LENGTH(colors)]);
 		drw->scheme[ColFg] = scheme[SchemeNorm][ColFg];
 		drw->scheme[ColBg] = scheme[SchemeNorm][ColBg];
@@ -966,7 +967,7 @@ void renderbar(Monitor * m)
 
 
 	/* draw status first so it can be overdrawn by tags later */
-	m->statusx = m == selmon ? drawstatusbar(m, bh, stext) : m->ww;
+	m->statusx = m == selmon ? drawstatusbar(m, bh, stext) : BARWIDTH(m);
 
 	for (c = m->clients; c; c = c->next)
 	{
@@ -1006,7 +1007,7 @@ void renderbar(Monitor * m)
 			drw_rect(drw, x, 0, w, bh, 1, 1);
 		}
 	}
-	drw_map(drw, m->barwin, 0, 0, m->ww, bh);
+	drw_map(drw, m->barwin, 0, 0, BARWIDTH(m), bh);
 }
 
 void drawbars(void)
@@ -1315,6 +1316,7 @@ void manage(Window w, XWindowAttributes * wa)
 	c->y = wa->y;
 	c->w = wa->width;
 	c->h = wa->height;
+	c->bw = borderpx;
 	c->oldbw = wa->border_width;
 
 	updatetitle(c);
@@ -1606,13 +1608,6 @@ void resizeclient(Client * c, int x, int y, int w, int h)
 	c->w = wc.width = w;
 	c->h = wc.height = h;
 	wc.border_width = c->bw;
-	if (((nexttiled(c->mon->clients) == c && !nexttiled(c->next))) && !c->isfullscreen
-		&& !c->isfloating)
-	{
-		c->w = wc.width += c->bw * 2;
-		c->h = wc.height += c->bw * 2;
-		wc.border_width = 0;
-	}
 	XConfigureWindow(dpy, c->win, CWX | CWY | CWWidth | CWHeight | CWBorderWidth, &wc);
 	configure(c);
 }
@@ -1738,10 +1733,10 @@ void sendmon(Client * c, Monitor * m)
 	c->tags = m->tagset[m->seltags];	/* assign tags of target monitor */
 	if (c->isfullscreen)
 	{
-		c->fsw = MAX(1, MIN(c->fsw, m->ww - 2 * c->oldbw));
-		c->fsh = MAX(1, MIN(c->fsh, m->wh - 2 * c->oldbw));
-		c->fsx = MAX(m->wx, MIN(c->fsx + dx, m->wx + m->ww - c->fsw - 2 * c->oldbw));
-		c->fsy = MAX(m->wy, MIN(c->fsy + dy, m->wy + m->wh - c->fsh - 2 * c->oldbw));
+		c->fsw = MAX(1, MIN(c->fsw, m->ww - 2 * borderpx));
+		c->fsh = MAX(1, MIN(c->fsh, m->wh - 2 * borderpx));
+		c->fsx = MAX(m->wx, MIN(c->fsx + dx, m->wx + m->ww - c->fsw - 2 * borderpx));
+		c->fsy = MAX(m->wy, MIN(c->fsy + dy, m->wy + m->wh - c->fsh - 2 * borderpx));
 		resizeclient(c, m->mx, m->my, m->mw, m->mh);
 	}
 	attach(c);
@@ -1823,7 +1818,6 @@ void setfullscreen(Client * c, int fullscreen)
 		c->fsh = c->h;
 		c->isfullscreen = 1;
 		c->oldstate = c->isfloating;
-		c->oldbw = c->bw;
 		c->bw = 0;
 		c->isfloating = 1;
 		resizeclient(c, c->mon->mx, c->mon->my, c->mon->mw, c->mon->mh);
@@ -1835,7 +1829,7 @@ void setfullscreen(Client * c, int fullscreen)
 	{
 		c->isfullscreen = 0;
 		c->isfloating = c->oldstate;
-		c->bw = c->oldbw;
+		c->bw = borderpx;
 		resizeclient(c, c->fsx, c->fsy, c->fsw, c->fsh);
 		arrange(c->mon);
 	}
@@ -2055,7 +2049,7 @@ void togglebar(const Arg * arg)
 {
 	selmon->showbar = selmon->pertag->showbars[selmon->pertag->curtag] = !selmon->showbar;
 	updatebarpos(selmon);
-	XMoveResizeWindow(dpy, selmon->barwin, selmon->wx + sp, selmon->by + vp, selmon->ww - 2 * sp,
+	XMoveResizeWindow(dpy, selmon->barwin, selmon->wx + sp, selmon->by + vp, BARWIDTH(selmon),
 					  bh);
 	arrange(selmon);
 }
@@ -2190,6 +2184,7 @@ void updatebars(void)
 	XSetWindowAttributes wa = {
 		.override_redirect = True,
 		.background_pixmap = ParentRelative,
+		.border_pixel = scheme[SchemeNorm][ColBorder].pixel,
 		.event_mask = ButtonPressMask | ExposureMask
 	};
 	XClassHint ch = { "dwm", "dwm" };
@@ -2198,9 +2193,9 @@ void updatebars(void)
 		if (m->barwin)
 			continue;
 		m->barwin =
-			XCreateWindow(dpy, root, m->wx + sp, m->by + vp, m->ww - 2 * sp, bh, 0,
+			XCreateWindow(dpy, root, m->wx + sp, m->by + vp, BARWIDTH(m), bh, barborderpx,
 						  DefaultDepth(dpy, screen), CopyFromParent, DefaultVisual(dpy, screen),
-						  CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
+						  CWOverrideRedirect | CWBackPixmap | CWBorderPixel | CWEventMask, &wa);
 		XDefineCursor(dpy, m->barwin, cursor[CurNormal]);
 		XMapRaised(dpy, m->barwin);
 		XSetClassHint(dpy, m->barwin, &ch);
@@ -2213,12 +2208,12 @@ void updatebarpos(Monitor * m)
 	m->wh = m->mh;
 	if (m->showbar)
 	{
-		m->wh = m->wh - vertpad - bh;
+		m->wh = m->wh - vertpad - BARHEIGHT;
 		m->by = m->topbar ? m->wy : m->wy + m->wh + vertpad;
-		m->wy = m->topbar ? m->wy + bh + vp : m->wy;
+		m->wy = m->topbar ? m->wy + BARHEIGHT + vp : m->wy;
 	}
 	else
-		m->by = -bh - vp;
+		m->by = -BARHEIGHT - vp;
 }
 
 void updateclientlist()

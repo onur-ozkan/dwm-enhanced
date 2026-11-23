@@ -4,12 +4,14 @@
 #include "movestack.h"
 
 /* appearance */
-static const unsigned int gappx = 14;	/* default gap size between windows */
+static const int borderpx = 0;	/* application window border */
+static const int barborderpx = 0;	/* status bar border */
+static const unsigned int gappx = 0;	/* default gap size between windows */
 static const unsigned int snap = 32;	/* snap pixel */
 static const int showbar = 1;	/* 0 means no bar */
 static const int topbar = 1;	/* 0 means bottom bar */
-static const int vertpad = 9;	/* vertical padding of bar */
-static const int sidepad = 13;	/* horizontal padding of bar */
+static const int vertpad = 0;	/* vertical padding of bar */
+static const int sidepad = 0;	/* horizontal padding of bar */
 static const Bool viewontag = True;	/* Switch view on tag switch */
 static const int focusonwheel = 0;
 static const unsigned int switcherwidth = 760;
@@ -17,7 +19,6 @@ static const unsigned int switcherrows = 10;
 static const char *fonts[] = { "RobotoMono Nerd Font:size=10.50" };
 
 static const char col_soft_black[] = "#212121";
-static const char col_gray[] = "#616161";
 static const char col_dirty_white[] = "#eeeeee";
 static const char col_dark_yellow[] = "#f7ca88";
 static const char col_white[] = "#f5f5f5";
@@ -26,8 +27,8 @@ static const char col_blue[] = "#8197bf";
 
 static const char *colors[][3] = {
 	/* fg bg border */
-	[SchemeNorm] = {col_dirty_white, col_soft_black, col_gray},	// Normal
-	[SchemeSel] = {col_dark_yellow, col_soft_black, col_soft_black},	// Selected
+	[SchemeNorm] = {col_dirty_white, col_soft_black, col_white},	// Normal
+	[SchemeSel] = {col_dark_yellow, col_soft_black, col_white},	// Selected
 	[SchemeBlue] = {col_blue, col_soft_black, col_blue},
 	[SchemeSwitcherWorkspace] = {col_dark_yellow, col_soft_black, col_dark_yellow},
 	[SchemeSwitcherFilter] = {col_green, col_soft_black, col_green},
