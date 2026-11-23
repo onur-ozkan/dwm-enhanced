@@ -80,6 +80,7 @@ static Key keys[] = {
 	{MODKEY, XK_h, setmfact, {.f = -0.05}},
 	{MODKEY, XK_l, setmfact, {.f = +0.05}},
 	{MODKEY, XK_Return, zoom, {0}},
+	{MODKEY, XK_grave, view, {.ui = 0}},
 	{MODKEY, XK_Tab, switcheropen, {0}},
 	{MODKEY | ShiftMask, XK_Tab, switcheropen, {0}},
 	{MODKEY, XK_comma, focusmon, {.i = -1}},
