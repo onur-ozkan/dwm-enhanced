@@ -1,31 +1,132 @@
 /* Included by dwm.c: popup navigation never changes dwm's active view. */
+#include <X11/extensions/Xrender.h>
+
+typedef struct SwitcherIcon SwitcherIcon;
+struct SwitcherIcon
+{
+	Window win;
+	Picture picture;
+	unsigned int w, h;
+	SwitcherIcon *next;
+};
+
 typedef struct
 {
 	Window win;
 	char label[1024];
 } SwitcherItem;
 
-enum
-{
-	SwitcherWindows,
-	SwitcherWorkspaces
-};
-
 static struct
 {
 	Window win, initial;
 	Monitor *mon;
 	Drw *drw;
+	Picture picture;
+	Atom iconatom;
+	SwitcherIcon *icons;
 	XIM im;
 	XIC ic;
 	SwitcherItem *items;
 	size_t count, capacity, selected, offset;
 	unsigned int tag, starttag, view, rows, width, height, rowheight;
-	int all, mode, released;
-	KeyCode shift;
+	int all, released;
 	unsigned char modifiers[256], down[256];
 	char query[256];
 } switcher;
+
+/* Cache even missing icons; navigation and filtering never reload images. */
+static SwitcherIcon *switchericon(Window win)
+{
+	SwitcherIcon *icon;
+	Atom type;
+	int format;
+	unsigned long n, remaining, *data = NULL, *best = NULL;
+	unsigned long i, w, h, size, score = ULONG_MAX, candidate;
+	unsigned int x, y, a, pixel, target = MIN(drw->fonts->h, switcher.rowheight);
+	Pixmap pixmap;
+	GC gc;
+	XImage *image;
+	XRenderPictFormat *argb;
+	XTransform transform = {{{0}}};
+
+	for (icon = switcher.icons; icon; icon = icon->next)
+		if (icon->win == win)
+			return icon;
+	icon = ecalloc(1, sizeof *icon);
+	icon->win = win;
+	icon->next = switcher.icons;
+	switcher.icons = icon;
+	argb = XRenderFindStandardFormat(dpy, PictStandardARGB32);
+	/* Bound transfer to 4 MiB; validate dimensions before multiplying. */
+	if (!switcher.picture || !argb || XGetWindowProperty(dpy, win, switcher.iconatom,
+			0, 1024 * 1024, False, XA_CARDINAL, &type, &format, &n, &remaining,
+			(unsigned char **)&data) != Success)
+		goto done;
+	if (type != XA_CARDINAL || format != 32)
+		goto done;
+	for (i = 0; i + 2 <= n; i += 2 + w * h)
+	{
+		w = data[i];
+		h = data[i + 1];
+		if (!w || !h || w > (n - i - 2) / h)
+			break;
+		size = MAX(w, h);
+		if (size > 1024)
+			continue;
+		/* Prefer the nearest size at least as large as the row icon. */
+		candidate = size >= target ? size - target : 1024 + target - size;
+		if (candidate < score)
+		{
+			best = &data[i];
+			score = candidate;
+		}
+	}
+	if (!best)
+		goto done;
+	w = best[0];
+	h = best[1];
+	icon->w = MAX(1, w * target / MAX(w, h));
+	icon->h = MAX(1, h * target / MAX(w, h));
+	image = XCreateImage(dpy, DefaultVisual(dpy, screen), 32, ZPixmap, 0, NULL,
+						 w, h, 32, 0);
+	if (!image)
+		goto done;
+	image->data = ecalloc(h, image->bytes_per_line);
+	for (y = 0; y < h; y++)
+		for (x = 0; x < w; x++)
+		{
+			pixel = best[2 + y * w + x];
+			a = pixel >> 24;
+			/* EWMH uses straight alpha; Render requires premultiplied channels. */
+			XPutPixel(image, x, y, (a << 24)
+				| (((pixel >> 16 & 255) * a / 255) << 16)
+				| (((pixel >> 8 & 255) * a / 255) << 8)
+				| ((pixel & 255) * a / 255));
+		}
+	pixmap = XCreatePixmap(dpy, root, w, h, 32);
+	gc = XCreateGC(dpy, pixmap, 0, NULL);
+	XPutImage(dpy, pixmap, gc, image, 0, 0, 0, 0, w, h);
+	XFreeGC(dpy, gc);
+	XDestroyImage(image);
+	icon->picture = XRenderCreatePicture(dpy, pixmap, argb, 0, NULL);
+	XFreePixmap(dpy, pixmap);
+	transform.matrix[0][0] = XDoubleToFixed((double)w / icon->w);
+	transform.matrix[1][1] = XDoubleToFixed((double)h / icon->h);
+	transform.matrix[2][2] = XDoubleToFixed(1);
+	XRenderSetPictureTransform(dpy, icon->picture, &transform);
+	XRenderSetPictureFilter(dpy, icon->picture, FilterBilinear, NULL, 0);
+done:
+	if (data)
+		XFree(data);
+	return icon;
+}
+
+static void switcherfreeicon(SwitcherIcon *icon)
+{
+	if (icon->picture)
+		XRenderFreePicture(dpy, icon->picture);
+	free(icon);
+}
 
 static unsigned int switcherworkspaces(void)
 {
@@ -55,6 +156,8 @@ static int switchermatch(const char *text, const char *query)
 
 static void switcherclose(void)
 {
+	SwitcherIcon *icon;
+
 	if (!switcher.win)
 		return;
 	XUngrabKeyboard(dpy, CurrentTime);
@@ -64,6 +167,13 @@ static void switcherclose(void)
 	if (switcher.im)
 		XCloseIM(switcher.im);
 	XDestroyWindow(dpy, switcher.win);
+	while ((icon = switcher.icons))
+	{
+		switcher.icons = icon->next;
+		switcherfreeicon(icon);
+	}
+	if (switcher.picture)
+		XRenderFreePicture(dpy, switcher.picture);
 	switcher.drw->fonts = NULL;	/* Shared with the bar drawing context. */
 	drw_free(switcher.drw);
 	free(switcher.items);
@@ -73,7 +183,8 @@ static void switcherclose(void)
 static void switcherdraw(void)
 {
 	Drw *d = switcher.drw;
-	unsigned int i, column = 0, columns = 0, x, w, h = switcher.rowheight;
+	SwitcherIcon *icon;
+	unsigned int i, column = 0, columns = 0, x, w, side, y, h = switcher.rowheight;
 	unsigned int visible = switcherworkspaces();
 	size_t index;
 	char text[1024];
@@ -91,15 +202,21 @@ static void switcherdraw(void)
 		w = (++column) * switcher.width / columns - x;
 		drw_setscheme(d, scheme[i == switcher.tag && !switcher.all
 							   ? SchemeSwitcherWorkspace : SchemeNorm]);
-		drw_text(d, x, 0, w, h, lrpad / 2, tags[i],
-				 i == switcher.tag && !switcher.all && switcher.mode == SwitcherWorkspaces);
+		if (i == switcher.tag && !switcher.all)
+		{
+			side = MIN(h > 4 ? h - 4 : h, w);
+			drw_text(d, x, (h - side) / 2, side, side,
+				(side - MIN(side, drw_fontset_getwidth(d, tags[i]))) / 2, tags[i], 1);
+		}
+		else
+			drw_text(d, x, 0, w, h, lrpad / 2, tags[i], 0);
 	}
 	drw_setscheme(d, scheme[SchemeSwitcherFilter]);
 	snprintf(text, sizeof text, "Filter: %s|", switcher.query);
 	drw_text(d, 0, h, switcher.width, h, lrpad / 2, text, 0);
 	drw_setscheme(d, scheme[SchemeNorm]);
-	snprintf(text, sizeof text, "%s | [%c] All workspaces (Ctrl+Space)",
-			 switcher.mode == SwitcherWindows ? "Windows" : "Workspaces", switcher.all ? 'x' : ' ');
+	snprintf(text, sizeof text, "Windows | [%c] All workspaces (Ctrl+Space)",
+			 switcher.all ? 'x' : ' ');
 	drw_text(d, 0, 2 * h, switcher.width, h, lrpad / 2, text, 0);
 	if (switcher.selected < switcher.offset)
 		switcher.offset = switcher.selected;
@@ -110,15 +227,33 @@ static void switcherdraw(void)
 		index = switcher.offset + i;
 		drw_setscheme(d, scheme[index == switcher.selected && index < switcher.count
 								? SchemeBlue : SchemeNorm]);
-		drw_text(d, 0, (3 + i) * h, switcher.width, h, lrpad / 2,
+		drw_text(d, 0, (3 + i) * h, switcher.width, h,
+				 index < switcher.count ? lrpad + MIN(d->fonts->h, h) : lrpad / 2,
 				 index < switcher.count ? switcher.items[index].label
 				 : (!switcher.count && !i ? "No matching windows" : ""),
-				 index == switcher.selected && index < switcher.count
-				 && switcher.mode == SwitcherWindows);
+				 index == switcher.selected && index < switcher.count);
+		if (index < switcher.count)
+		{
+			icon = switchericon(switcher.items[index].win);
+			if (icon->picture)
+				XRenderComposite(dpy, PictOpOver, icon->picture, None, switcher.picture,
+					0, 0, 0, 0, lrpad / 2 + (MIN(d->fonts->h, h) - icon->w) / 2,
+					(3 + i) * h + (h - icon->h) / 2, icon->w, icon->h);
+			else
+			{
+				side = MIN(d->fonts->h, h);
+				x = lrpad / 2;
+				y = (3 + i) * h + (h - side) / 2;
+				drw_rect(d, x, y, side, side, 0, index == switcher.selected);
+				if (side > 4)
+					drw_rect(d, x + 2, y + 2, side - 4, 2, 1,
+						index == switcher.selected);
+			}
+		}
 	}
 	drw_setscheme(d, scheme[SchemeNorm]);
 	snprintf(text, sizeof text,
-			 "Tab/Shift+Tab: cycle   Shift: mode   %zu/%zu",
+			 "Tab: app   `: workspace   Shift: reverse   %zu/%zu",
 			 switcher.count ? switcher.selected + 1 : 0, switcher.count);
 	drw_text(d, 0, (3 + switcher.rows) * h, switcher.width, h, lrpad / 2, text, 0);
 	drw_map(d, switcher.win, 0, 0, switcher.width, switcher.height);
@@ -128,12 +263,21 @@ static void switcherrefresh(void)
 {
 	Client *c;
 	SwitcherItem *item;
+	SwitcherIcon **link, *icon;
 	Window selected = switcher.selected < switcher.count
 		? switcher.items[switcher.selected].win : None;
 	size_t capacity = 0, previous = switcher.selected;
 	unsigned int i, visible = switcherworkspaces();
 	char workspaces[256];
 
+	for (link = &switcher.icons; (icon = *link); )
+		if (!(c = wintoclient(icon->win)) || c->mon != switcher.mon)
+		{
+			*link = icon->next;
+			switcherfreeicon(icon);
+		}
+		else
+			link = &icon->next;
 	if (!switcher.items)
 		selected = switcher.initial;
 	if (!(visible & (1U << switcher.tag)))
@@ -154,7 +298,7 @@ static void switcherrefresh(void)
 		if (switchermatch(c->name, switcher.query) || switchermatch(c->app, switcher.query))
 		{
 			workspaces[0] = '\0';
-			for (i = 0; i < LENGTH(tags); i++)
+			for (i = 0; switcher.all && i < LENGTH(tags); i++)
 				if (c->tags & (1U << i))
 				{
 					if (*workspaces)
@@ -163,8 +307,11 @@ static void switcherrefresh(void)
 				}
 			item = &switcher.items[switcher.count++];
 			item->win = c->win;
-			snprintf(item->label, sizeof item->label, "[%s] %s — %s", workspaces, c->app,
-					 c->name);
+			if (switcher.all)
+				snprintf(item->label, sizeof item->label, "[%s] %s — %s", workspaces,
+						 c->app, c->name);
+			else
+				snprintf(item->label, sizeof item->label, "%s — %s", c->app, c->name);
 		}
 	}
 	switcher.selected = switcher.count ? MIN(previous, switcher.count - 1) : 0;
@@ -182,10 +329,9 @@ static void switcheractivate(void)
 	Monitor *mon = switcher.mon;
 	Arg tag;
 
-	if (switcher.mode == SwitcherWindows && switcher.selected < switcher.count)
+	if (switcher.selected < switcher.count)
 		c = wintoclient(switcher.items[switcher.selected].win);
-	if ((switcher.mode == SwitcherWindows && !c)
-		|| (switcher.tag == switcher.starttag && (!c || c->win == switcher.initial)))
+	if (switcher.tag == switcher.starttag && (!c || c->win == switcher.initial))
 	{
 		switcherclose();
 		return;
@@ -208,26 +354,18 @@ static void switcherreset(void)
 	switcherrefresh();
 }
 
-static void switchercycle(int direction)
+static void switcherworkspace(int direction)
 {
 	unsigned int visible, tag = switcher.tag;
 
-	if (switcher.mode == SwitcherWorkspaces)
-	{
-		visible = switcherworkspaces();
-		do
-			switcher.tag = (switcher.tag + LENGTH(tags) + direction) % LENGTH(tags);
-		while (!(visible & (1U << switcher.tag)));
-		if (switcher.tag == tag && !switcher.all)
-			return;
-		switcher.all = 0;
-		switcherreset();
-	}
-	else if (switcher.count > 1)
-	{
-		switcher.selected = (switcher.selected + switcher.count + direction) % switcher.count;
-		switcherdraw();
-	}
+	visible = switcherworkspaces();
+	do
+		switcher.tag = (switcher.tag + LENGTH(tags) + direction) % LENGTH(tags);
+	while (!(visible & (1U << switcher.tag)));
+	if (switcher.tag == tag && !switcher.all)
+		return;
+	switcher.all = 0;
+	switcherreset();
 }
 
 static void switcherkey(XKeyEvent *event)
@@ -250,14 +388,22 @@ static void switcherkey(XKeyEvent *event)
 	{
 	case XK_Tab:
 	case XK_ISO_Left_Tab:
-		switchercycle(key == XK_ISO_Left_Tab || (event->state & ShiftMask) ? -1 : 1);
+		if (switcher.count > 1)
+		{
+			switcher.selected = (switcher.selected + switcher.count
+				+ (key == XK_ISO_Left_Tab || (event->state & ShiftMask) ? -1 : 1))
+				% switcher.count;
+			switcherdraw();
+		}
+		return;
+	case XK_grave:
+	case XK_asciitilde:
+		switcherworkspace(event->state & ShiftMask ? -1 : 1);
 		return;
 	case XK_space:
 		if (event->state & ControlMask)
 		{
 			switcher.all = !switcher.all;
-			if (switcher.all)
-				switcher.mode = SwitcherWindows;
 			switcherreset();
 			return;
 		}
@@ -305,7 +451,6 @@ static void switcherfinish(void)
 static int switcherevent(XEvent *event)
 {
 	XEvent input, next;
-	KeySym key;
 	unsigned int code;
 
 	if (!switcher.win)
@@ -323,7 +468,6 @@ static int switcherevent(XEvent *event)
 				&& next.xkey.time == event->xkey.time)
 				return 1;
 		}
-		key = XLookupKeysym(&event->xkey, 0);
 		if (event->type == KeyRelease)
 		{
 			switcher.down[code] = 0;
@@ -332,34 +476,12 @@ static int switcherevent(XEvent *event)
 				switcheractivate();
 				return 1;
 			}
-			if (switcher.shift == code)
-			{
-				switcher.shift = 0;
-				switcher.mode = !switcher.mode;
-				if (switcher.mode == SwitcherWorkspaces && switcher.all)
-				{
-					switcher.all = 0;
-					switcherreset();
-				}
-				else
-					switcherdraw();
-			}
 		}
 		else
 		{
 			if (switcher.modifiers[code])
 				switcher.released = 0;
-			if (key == XK_Shift_L || key == XK_Shift_R)
-			{
-				if (!(event->xkey.state & ShiftMask))
-					switcher.shift = code;
-				else if (switcher.shift != code)
-					switcher.shift = 0;
-				switcher.down[code] = 1;
-				return 1;
-			}
 			switcher.down[code] = 1;
-			switcher.shift = 0;
 		}
 		/* Alt belongs to the popup gesture, not the text being composed. */
 		input = *event;
@@ -369,10 +491,7 @@ static int switcherevent(XEvent *event)
 		return 1;
 	}
 	if (event->type == ButtonPress || event->type == ButtonRelease)
-	{
-		switcher.shift = 0;
 		return 1;
-	}
 	if (event->type == Expose && event->xexpose.window == switcher.win)
 	{
 		if (!event->xexpose.count)
@@ -391,6 +510,7 @@ static void switcheropen(const Arg *arg)
 	char down[32];
 	unsigned int active, i, j, code;
 	int border = 2;
+	XRenderPictFormat *format;
 
 	(void)arg;
 	if (switcher.win)
@@ -409,6 +529,10 @@ static void switcheropen(const Arg *arg)
 	switcher.height = (switcher.rows + 4) * switcher.rowheight;
 	switcher.drw = drw_create(dpy, screen, root, switcher.width, switcher.height);
 	switcher.drw->fonts = drw->fonts;
+	switcher.iconatom = XInternAtom(dpy, "_NET_WM_ICON", False);
+	format = XRenderFindVisualFormat(dpy, DefaultVisual(dpy, screen));
+	if (format)
+		switcher.picture = XRenderCreatePicture(dpy, switcher.drw->drawable, format, 0, NULL);
 	switcher.win = XCreateWindow(dpy, root,
 								 selmon->wx + (selmon->ww - (int)switcher.width - 2 * border) / 2,
 								 selmon->wy + (selmon->wh - (int)switcher.height - 2 * border) / 2,
