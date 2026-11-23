@@ -16,11 +16,9 @@ static const unsigned int switcherwidth = 760;
 static const unsigned int switcherrows = 10;
 static const char *fonts[] = { "RobotoMono Nerd Font:size=10.50" };
 
-static const char dmenufont[] = "Roboto Mono:size=10.50";
 static const char col_soft_black[] = "#212121";
 static const char col_gray[] = "#616161";
 static const char col_dirty_white[] = "#eeeeee";
-static const char col_red[] = "#d75f5f";
 static const char col_dark_yellow[] = "#f7ca88";
 static const char col_white[] = "#f5f5f5";
 static const char col_green[] = "#87af5f";
@@ -30,9 +28,7 @@ static const char *colors[][3] = {
 	/* fg bg border */
 	[SchemeNorm] = {col_dirty_white, col_soft_black, col_gray},	// Normal
 	[SchemeSel] = {col_dark_yellow, col_soft_black, col_soft_black},	// Selected
-	[SchemeRed] = {col_red, col_soft_black, col_red},
 	[SchemeBlue] = {col_blue, col_soft_black, col_blue},
-	[SchemeGreen] = {col_green, col_soft_black, col_green},
 	[SchemeSwitcherWorkspace] = {col_dark_yellow, col_soft_black, col_dark_yellow},
 	[SchemeSwitcherFilter] = {col_green, col_soft_black, col_green},
 	[SchemeSwitcherBorder] = {col_dirty_white, col_soft_black, col_white},
@@ -134,9 +130,9 @@ static Button buttons[] = {
 	{ClkStatusText, 0, Button2, spawn, SHCMD("st -e zsh -c 'TERM=screen-256color tmux' >/dev/null 2>&1")},
 	{ClkTagBar, 0, Button1, view, {0}},
 	{ClkTagBar, 0, Button3, toggleview, {0}},
-	{ClkClientWin, MODKEY, Button1, movemouse, {0}},
+	{ClkClientWin, MODKEY, Button1, dragmouse, {.i = 0}},
 	{ClkClientWin, MODKEY, Button2, togglefloating, {0}},
-	{ClkClientWin, MODKEY, Button3, resizemouse, {0}},
+	{ClkClientWin, MODKEY, Button3, dragmouse, {.i = 1}},
 	{ClkTagBar, MODKEY, Button1, tag, {0}},
 	{ClkTagBar, MODKEY, Button3, toggletag, {0}},
 };

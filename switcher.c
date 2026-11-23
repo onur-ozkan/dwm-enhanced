@@ -128,6 +128,19 @@ static void switcherfreeicon(SwitcherIcon *icon)
 	free(icon);
 }
 
+static void switcherinvalidate(Window win)
+{
+	SwitcherIcon **link, *icon;
+
+	for (link = &switcher.icons; (icon = *link); link = &icon->next)
+		if (icon->win == win)
+		{
+			*link = icon->next;
+			switcherfreeicon(icon);
+			return;
+		}
+}
+
 static unsigned int switcherworkspaces(void)
 {
 	Client *c;
@@ -263,21 +276,12 @@ static void switcherrefresh(void)
 {
 	Client *c;
 	SwitcherItem *item;
-	SwitcherIcon **link, *icon;
 	Window selected = switcher.selected < switcher.count
 		? switcher.items[switcher.selected].win : None;
 	size_t capacity = 0, previous = switcher.selected;
 	unsigned int i, visible = switcherworkspaces();
 	char workspaces[256];
 
-	for (link = &switcher.icons; (icon = *link); )
-		if (!(c = wintoclient(icon->win)) || c->mon != switcher.mon)
-		{
-			*link = icon->next;
-			switcherfreeicon(icon);
-		}
-		else
-			link = &icon->next;
 	if (!switcher.items)
 		selected = switcher.initial;
 	if (!(visible & (1U << switcher.tag)))
@@ -548,7 +552,7 @@ static void switcheropen(const Arg *arg)
 		return;
 	}
 	if (XGrabPointer(dpy, switcher.win, False, ButtonPressMask | ButtonReleaseMask,
-					 GrabModeAsync, GrabModeAsync, None, cursor[CurNormal]->cursor,
+					 GrabModeAsync, GrabModeAsync, None, cursor[CurNormal],
 					 CurrentTime) != GrabSuccess)
 	{
 		switcherclose();

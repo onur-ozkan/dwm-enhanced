@@ -21,6 +21,8 @@ options:
 
 ${OBJ}: config.mk
 dwm.o: config.h drw.h util.h movestack.h switcher.c
+drw.o: drw.h util.h
+util.o: util.h
 
 dwm: ${OBJ}
 	${CC} -o $@ ${OBJ} ${LDFLAGS}
@@ -30,8 +32,8 @@ clean:
 
 dist: clean
 	mkdir -p dwm-${VERSION}
-	cp -R LICENSE Makefile README config.mk\
-		dwm.1 drw.h util.h config.h movestack.h switcher.c ${SRC} dwm.png transient.c dwm-${VERSION}
+	cp -R LICENSE Makefile README.md config.mk\
+		dwm.1 drw.h util.h config.h movestack.h switcher.c ${SRC} transient.c tests dwm-${VERSION}
 	tar -cf dwm-${VERSION}.tar dwm-${VERSION}
 	gzip dwm-${VERSION}.tar
 	rm -rf dwm-${VERSION}
@@ -52,17 +54,15 @@ indent:
 	indent --blank-lines-after-procedures --brace-indent0 --indent-level4 \
 		--no-space-after-casts --no-space-after-function-call-names \
 		--dont-break-procedure-type --format-all-comments \
-		--line-length100 --comment-line-length100 --tab-size4 *.{c,h}
+		--line-length100 --comment-line-length100 --tab-size4 *.c *.h
 
 check-indentation:
-	$(eval SOURCES := $(shell ls *.{c,h}))
-	for i in $(SOURCES); do \
-		export DIFFS=$$(diff $$i <(indent -st -bap -bli0 -i4 -ncs -npcs -npsl -fca -l100 -lc100 -ts4 $$i)); \
-		if [ -z "$$DIFFS" ]; then echo -e "\033[0;32mValid indentation format -> $$i\033[0m"; else echo -e "\033[0;31mInvalid indentation format -> $$i\033[0m"; fi \
-	done
+	status=0; for file in *.c *.h; do \
+		indent -st -bap -bli0 -i4 -ncs -npcs -npsl -fca -l100 -lc100 -ts4 "$$file" \
+			| diff - "$$file" || status=1; \
+	done; exit $$status
 
 check:
-	@echo Checking indentation standards
-	$(MAKE) check-indentation
+	sh tests/run.sh
 
 .PHONY: all options clean dist install uninstall indent check-indentation check

@@ -144,6 +144,8 @@ static Fnt *xfont_create(Drw * drw, const char *fontname, FcPattern * fontpatter
 	FcBool iscol;
 	if (FcPatternGetBool(xfont->pattern, FC_COLOR, 0, &iscol) == FcResultMatch && iscol)
 	{
+		if (pattern)
+			FcPatternDestroy(pattern);
 		XftFontClose(drw->dpy, xfont);
 		return NULL;
 	}
@@ -479,25 +481,4 @@ drw_font_getexts(Fnt * font, const char *text, unsigned int len, unsigned int *w
 		*w = ext.xOff;
 	if (h)
 		*h = font->h;
-}
-
-Cur *drw_cur_create(Drw * drw, int shape)
-{
-	Cur *cur;
-
-	if (!drw || !(cur = ecalloc(1, sizeof(Cur))))
-		return NULL;
-
-	cur->cursor = XCreateFontCursor(drw->dpy, shape);
-
-	return cur;
-}
-
-void drw_cur_free(Drw * drw, Cur * cursor)
-{
-	if (!cursor)
-		return;
-
-	XFreeCursor(drw->dpy, cursor->cursor);
-	free(cursor);
 }
