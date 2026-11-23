@@ -294,7 +294,6 @@ static void updatewindowtype(Client * c);
 static void updatewmhints(Client * c);
 static void view(const Arg * arg);
 static void viewclient(const Arg *arg, Client *c);
-static void warp(const Client * c);
 static Client *wintoclient(Window w);
 static Monitor *wintomon(Window w);
 static int xerror(Display * dpy, XErrorEvent * ee);
@@ -1091,7 +1090,6 @@ void focusmon(const Arg * arg)
 	unfocus(selmon->sel, 0);
 	selmon = m;
 	focus(NULL);
-	warp(selmon->sel);
 }
 
 void focusstack(const Arg * arg)
@@ -1426,7 +1424,7 @@ void coalescemotion(XEvent * e)
 
 void dragmouse(const Arg * arg)
 {
-	int x = 0, y = 0, ocx, ocy, nx, ny, nw, nh, px, py, resizing = arg->i;
+	int x, y, ocx, ocy, ocw, och, nx, ny, nw, nh, px, py, resizing = arg->i;
 	Client *c;
 	Monitor *m;
 	XEvent ev;
@@ -1438,12 +1436,12 @@ void dragmouse(const Arg * arg)
 	restack(selmon);
 	ocx = c->x;
 	ocy = c->y;
+	ocw = c->w;
+	och = c->h;
 	if (XGrabPointer(dpy, root, False, MOUSEMASK, GrabModeAsync, GrabModeAsync,
 					 None, cursor[resizing ? CurResize : CurMove], CurrentTime) != GrabSuccess)
 		return;
-	if (resizing)
-		XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, c->w + c->bw - 1, c->h + c->bw - 1);
-	else if (!getrootptr(&x, &y))
+	if (!getrootptr(&x, &y))
 	{
 		XUngrabPointer(dpy, CurrentTime);
 		return;
@@ -1468,8 +1466,8 @@ void dragmouse(const Arg * arg)
 			py = ev.type == MotionNotify ? ev.xmotion.y_root : ev.xbutton.y_root;
 			if (resizing)
 			{
-				nw = MAX(px - ocx - 2 * c->bw + 1, 1);
-				nh = MAX(py - ocy - 2 * c->bw + 1, 1);
+				nw = MAX(ocw + px - x, 1);
+				nh = MAX(och + py - y, 1);
 				if (c->mon->wx + nw >= selmon->wx && c->mon->wx + nw <= selmon->wx + selmon->ww
 					&& c->mon->wy + nh >= selmon->wy && c->mon->wy + nh <= selmon->wy + selmon->wh
 					&& !c->isfloating && selmon->lt[selmon->sellt]->arrange
@@ -1502,8 +1500,6 @@ void dragmouse(const Arg * arg)
 		}
 	}
 	while (ev.type != ButtonRelease);
-	if (resizing)
-		XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, c->w + c->bw - 1, c->h + c->bw - 1);
 	XUngrabPointer(dpy, CurrentTime);
 	if ((m = recttomon(c->x, c->y, c->w, c->h)) != selmon)
 	{
@@ -1642,8 +1638,6 @@ void restack(Monitor * m)
 				wc.sibling = c->win;
 			}
 	}
-	if (m == selmon && ISVISIBLE(m->sel))
-		warp(m->sel);
 }
 
 void run(void)
@@ -2506,28 +2500,6 @@ void applypertag(void)
 	selmon->lt[1] = p->ltidxs[tag][1];
 	if (selmon->showbar != p->showbars[tag])
 		togglebar(NULL);
-}
-
-void warp(const Client * c)
-{
-	int x, y;
-
-	if (!c)
-	{
-		XWarpPointer(dpy, None, root, 0, 0, 0, 0, selmon->wx + selmon->ww / 2,
-					 selmon->wy + selmon->wh / 2);
-		return;
-	}
-
-	if (!getrootptr(&x, &y) ||
-		(x > c->x - c->bw &&
-		 y > c->y - c->bw &&
-		 x < c->x + c->w + c->bw * 2 &&
-		 y < c->y + c->h + c->bw * 2) ||
-		(y > c->mon->by && y < c->mon->by + bh) || (c->mon->topbar && !y))
-		return;
-
-	XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, c->w / 2, c->h / 2);
 }
 
 Client *wintoclient(Window w)
