@@ -60,22 +60,24 @@ static void test_status(void)
 	const char *invalid[] = {"^", "hello ^x", "^^", "^c#fff^", "^c#gggggg^",
 		"^b#123456", "^r1,2^", "^r1,2,3^", "^r0,0,-1,2^", "^f^", "^f-^",
 		"^f999999999999999999999999999^", "^r0,0,1,2", "^f1 ^"};
-	char truncated[1024];
+	char truncated[1024], text[1024];
 	unsigned int i;
 
 	for (i = 0; i < LENGTH(valid); i++)
 	{
-		assert(statusvalid(valid[i]));
+		strcpy(text, valid[i]);
+		assert(statusparse(text, 0, bh, 0) != INT_MIN);
 		drawstatusbar(selmon, bh, (char *)valid[i]);
 	}
 	for (i = 0; i < LENGTH(invalid); i++)
 	{
-		assert(!statusvalid(invalid[i]));
+		strcpy(text, invalid[i]);
+		assert(statusparse(text, 0, bh, 0) == INT_MIN);
 		drawstatusbar(selmon, bh, (char *)invalid[i]);
 	}
 	memset(truncated, 'x', sizeof truncated);
 	memcpy(truncated + sizeof truncated - 5, "^c#f", 5);
-	assert(!statusvalid(truncated));
+	assert(statusparse(truncated, 0, bh, 0) == INT_MIN);
 	drawstatusbar(selmon, bh, truncated);
 }
 

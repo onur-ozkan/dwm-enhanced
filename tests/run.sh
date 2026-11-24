@@ -1,5 +1,5 @@
 #!/bin/sh
-# Requires a C compiler, pkg-config, the X11/Xft/Xinerama development libraries,
+# Requires a C compiler, pkg-config, the X11/Xft/Xinerama/XRender development libraries,
 # Fontconfig, and Xvfb. Run with: sh tests/run.sh
 set -eu
 
@@ -40,9 +40,9 @@ for mode in xinerama single; do
 	${CC:-cc} -std=c99 -pedantic -Wall -Wno-deprecated-declarations \
 		-D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200809L '-DVERSION="6.2"' $define \
 		-O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer \
-		$(pkg-config --cflags x11 xft xinerama fontconfig) \
+		$(pkg-config --cflags x11 xft xinerama xrender fontconfig) \
 		"$project/tests/regression.c" "$project/util.c" -o "$tmp/regression-$mode" \
 		-Wl,--wrap=XftFontMatch -Wl,--wrap=XftDrawStringUtf8 \
-		$(pkg-config --libs x11 xft xinerama fontconfig)
+		$(pkg-config --libs x11 xft xinerama xrender fontconfig)
 	"$tmp/regression-$mode"
 done
