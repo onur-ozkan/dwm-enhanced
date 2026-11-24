@@ -21,11 +21,11 @@ tags. Selecting certain tags displays all windows with these tags.
 Each screen contains a small status bar which displays all available tags, the
 layout, the title of the focused window, and the text read from the root window
 name property, if the screen is focused. A floating window is indicated with an
-empty square and a maximised floating window is indicated with a filled square
+empty square and a fixed-size floating window is indicated with a filled square
 before the windows title. The selected tags are indicated with a different
 color. Vacant, unselected tags are hidden.
 .P
-dwm draws a small border around windows to indicate the focus state.
+Gaps, bar padding, and application/bar borders are disabled by default.
 .P
 On start, dwm can start additional programs that may be specified in two special
 shell scripts (see the FILES section below), autostart_blocking.sh and
@@ -117,6 +117,9 @@ Close focused window.
 .B Mod1\-Tab
 Open the window switcher.
 .TP
+.B Mod1\-grave
+Toggle between the current and previous workspace.
+.TP
 .B Mod1\-Shift\-[1..n]
 Apply nth tag to focused window.
 .TP
@@ -137,7 +140,18 @@ Add/remove all windows with nth tag to/from the view.
 .TP
 .B Mod1\-Shift\-F12
 Quit dwm.
+.TP
+.B Mod1\-minus / Mod1\-equal / Mod1\-Shift\-equal
+Decrease, increase, or reset window gaps. The default is zero.
+.SS Window switcher
+Hold Mod1-Tab. Tab/Shift-Tab cycles apps, 1 through 9 selects a workspace, and
+0 toggles all workspaces on the current monitor. Release Mod1 to activate.
+.P
+All mode starts enabled and remembers your choice. Apps sort by workspace ID,
+then opening order, independently of focus.
 .SS Mouse commands
+Hover a workspace ID in the bar to preview its apps. Click an app to focus it;
+use the mouse wheel to scroll. Moving outside dismisses the preview.
 .TP
 .B Mod1\-Button1
 Move focused window while dragging. Tiled windows will be toggled to the floating state.

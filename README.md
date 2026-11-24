@@ -7,6 +7,10 @@ Requirements
 ------------
 In order to build dwm-enhanced you need to have X installed on your system.
 
+Building also requires a C compiler, make, and the X11, Xft, Xinerama, XRender,
+Fontconfig, and FreeType development libraries. The default shortcuts additionally
+use wpctl (WirePlumber), brightnessctl, zsh, and tmux.
+
 To have complete functionality while using dwm-enhanced, please install [bin scripts](https://github.com/onur-ozkan/nixconf/tree/master/.local/bin) and the following dependencies:
 
 | dependency																		    | role                          |
@@ -30,6 +34,8 @@ Configuration
 ------------
 Config file is the source code itself! General options are defined in the config header
 
+Gaps, bar padding, and application/bar borders are disabled by default.
+
 Shortcuts
 ------------
 | command								    | role												                            |
@@ -38,6 +44,7 @@ Shortcuts
 | **ctrl + space**							| search on browser											                    |
 | **alt + f**								| toggle fullscreen                     									    |
 | **alt + tab** | open window switcher |
+| **alt + backtick** | toggle current/previous workspace |
 | **alt + space**							| switch keyboard layout between us/tr											|
 | **alt + shift + return**					| open terminal										                            |
 | **alt + b**								| hide statusbar									                            |
@@ -49,16 +56,27 @@ Shortcuts
 | **alt + [h, l]**							| [decrease,increase] master size						  		                |
 | **alt + return**							| put focused stack into master				  		                            |
 | **alt + shift + e**						| quit stack								  		                            |
-| **alt + [-, +, =]**						| [decrease,increase,reset] gap size							  		        |
-| **alt + [0-1-2..9]**					 	| switch to specified tag					  		                            |
+| **alt + - / alt + = / alt + shift + =**						| [decrease,increase,reset] gap size (default: zero)							  		        |
+| **alt + [1..9]**					 	| switch to specified tag					  		                            |
 | **alt + 0**								| preview all stacks of all tags						  		                |
-| **alt + shift + [0-1-2..9]**				| move focused stack to specified tag		  		                            |
+| **alt + shift + [1..9]**				| move focused stack to specified tag		  		                            |
 | **alt + shift + 0**						| embed focused stack to all tags			  		                            |
 | **alt + shift + l**						| lock screen								  		                            |
 | **alt + shift + f7**						| change window background									                    |
 | **alt + shift + f12**						| quit dwm session									                            |
 | **alt + shift + p**						| use screenshot tool						  		                            |
 | **prtsc**									| use screenshot tool						  		                            |
+
+Window switcher
+------------
+Hold Alt+Tab. Tab/Shift+Tab cycles apps, 1..9 selects a workspace, and 0 toggles
+all workspaces on the current monitor. Release Alt to activate.
+
+All mode starts enabled and remembers your choice. Apps sort by workspace ID,
+then opening order, independently of focus.
+
+Hover a workspace ID in the bar to preview its apps. Click an app to focus it;
+use the mouse wheel to scroll. Moving outside dismisses the preview.
 
 Uninstallation
 ------------
