@@ -73,9 +73,9 @@ enum
 {
 	SchemeNorm,
 	SchemeSel,
-	SchemeBlue,
+	SchemeSwitcherSel,
+	SchemeSwitcherTitle,
 	SchemeSwitcherWorkspace,
-	SchemeSwitcherFilter,
 	SchemeSwitcherBorder
 };								/* color schemes */
 enum
@@ -145,6 +145,7 @@ struct Client
 	Client *snext;
 	Monitor *mon;
 	Window win;
+	unsigned long serial;		/* stable window-opening order */
 };
 
 typedef struct
@@ -180,6 +181,7 @@ struct Monitor
 	int topbar;
 	int bardirty;
 	int ltend, statusx;		/* boundaries from the last bar render */
+	int tagend[sizeof(unsigned int) * CHAR_BIT];
 	Client *clients;
 	Client *sel;
 	Client *stack;
@@ -207,6 +209,7 @@ static void arrange(Monitor * m);
 static void arrangemon(Monitor * m);
 static void attach(Client * c);
 static void attachstack(Client * c);
+static int bartag(Monitor *m, int x);
 static void buttonpress(XEvent * e);
 static void checkotherwm(void);
 static void cleanup(void);
@@ -236,6 +239,7 @@ static long getstate(Window w);
 static int gettextprop(Window w, Atom atom, char *text, unsigned int size);
 static void grabbuttons(Client * c, int focused);
 static void grabkeys(void);
+static void hovernotify(XEvent *e);
 static int hasatomprop(Client * c, Atom prop, Atom atom);
 static void keypress(XEvent * e);
 static void killclient(const Arg * arg);
@@ -249,7 +253,7 @@ static void pop(Client *);
 static void propertynotify(XEvent * e);
 static void quit(const Arg * arg);
 static Monitor *recttomon(int x, int y, int w, int h);
-static void renderbar(Monitor * m);
+static int renderbar(Monitor * m);
 static void resize(Client * c, int x, int y, int w, int h, int interact);
 static void resizeclient(Client * c, int x, int y, int w, int h);
 static void restack(Monitor * m);
@@ -318,6 +322,7 @@ static int vp;					/* vertical padding for bar */
 static int sp;					/* side padding for bar */
 static int (*xerrorxlib)(Display *, XErrorEvent *);
 static unsigned int numlockmask = 0;
+static unsigned long clientserial;
 static void (*handler[LASTEvent])(XEvent *) = {
 	[ButtonPress] = buttonpress,
 	[ClientMessage] = clientmessage,
@@ -325,9 +330,12 @@ static void (*handler[LASTEvent])(XEvent *) = {
 	[ConfigureNotify] = configurenotify,
 	[DestroyNotify] = destroynotify,
 	[Expose] = expose,
+	[EnterNotify] = hovernotify,
+	[LeaveNotify] = hovernotify,
 	[FocusIn] = focusin,
 	[KeyPress] = keypress,
 	[MappingNotify] = mappingnotify,
+	[MotionNotify] = hovernotify,
 	[MapRequest] = maprequest,
 	[PropertyNotify] = propertynotify,
 	[UnmapNotify] = unmapnotify
@@ -508,9 +516,21 @@ void attachstack(Client * c)
 	c->mon->stack = c;
 }
 
+int bartag(Monitor *m, int x)
+{
+	unsigned int i;
+
+	if (x >= 0)
+		for (i = 0; i < LENGTH(tags); i++)
+			if (x < m->tagend[i])
+				return i;
+	return -1;
+}
+
 void buttonpress(XEvent * e)
 {
-	unsigned int i, x, click, occ = 0;
+	unsigned int i, click;
+	int tag;
 	Arg arg = { 0 };
 	Client *c;
 	Monitor *m;
@@ -528,21 +548,10 @@ void buttonpress(XEvent * e)
 	if (ev->window == selmon->barwin)
 	{
 		flushbars();
-		i = x = 0;
-		for (c = m->clients; c; c = c->next)
-			occ |= c->tags == 255 ? 0 : c->tags;
-		do
-		{
-			/* do not reserve space for vacant tags */
-			if (!(occ & 1 << i || m->tagset[m->seltags] & 1 << i))
-				continue;
-			x += TEXTW(tags[i]);
-		}
-		while (ev->x >= x && ++i < LENGTH(tags));
-		if (i < LENGTH(tags))
+		if ((tag = bartag(m, ev->x)) >= 0)
 		{
 			click = ClkTagBar;
-			arg.ui = 1 << i;
+			arg.ui = 1U << tag;
 		}
 		else if (ev->x < m->ltend)
 			click = ClkLtSymbol;
@@ -608,6 +617,8 @@ void cleanupmon(Monitor * mon)
 {
 	Monitor **link;
 
+	if (switcher.win && switcher.mon == mon)
+		switcherclose();
 	for (link = &mons; *link != mon; link = &(*link)->next)
 		;
 	*link = mon->next;
@@ -947,19 +958,22 @@ void drawbar(Monitor * m)
 void flushbars(void)
 {
 	Monitor *m;
+	int changed = 0;
 
 	for (m = mons; m; m = m->next)
 		if (m->bardirty)
 		{
 			m->bardirty = 0;
 			if (m->showbar)
-				renderbar(m);
+				changed |= renderbar(m) && switcher.win && switcher.hover && switcher.mon == m;
 		}
+	if (changed && switcher.win && switcher.hover)
+		hovernotify(NULL);
 }
 
-void renderbar(Monitor * m)
+int renderbar(Monitor * m)
 {
-	int x, w;
+	int x, w, changed = 0;
 	int boxs = drw->fonts->h / 9;
 	int boxw = drw->fonts->h / 6 + 2;
 	unsigned int i, occ = 0, urg = 0;
@@ -978,11 +992,13 @@ void renderbar(Monitor * m)
 	x = 0;
 	for (i = 0; i < LENGTH(tags); i++)
 	{
-		/* do not draw vacant tags */
-		if (!(occ & 1 << i || m->tagset[m->seltags] & 1 << i))
+		/* Cache the same boundaries for drawing, clicks, and hover hits. */
+		w = ((occ | m->tagset[m->seltags]) & (1U << i)) ? TEXTW(tags[i]) : 0;
+		changed |= m->tagend[i] != x + w;
+		m->tagend[i] = x + w;
+		if (!w)
 			continue;
 
-		w = TEXTW(tags[i]);
 		drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
 		drw_text(drw, x, 0, w, bh, lrpad / 2, tags[i], urg & 1 << i);
 		x += w;
@@ -1008,6 +1024,7 @@ void renderbar(Monitor * m)
 		}
 	}
 	drw_map(drw, m->barwin, 0, 0, BARWIDTH(m), bh);
+	return changed;
 }
 
 void drawbars(void)
@@ -1308,8 +1325,10 @@ void manage(Window w, XWindowAttributes * wa)
 	Client *c, *t = NULL;
 	Window trans = None;
 	XWindowChanges wc;
+	int modal = switcher.win && !switcher.hover;
 
 	c = ecalloc(1, sizeof(Client));
+	c->serial = ++clientserial;
 	c->win = w;
 	/* geometry */
 	c->x = wa->x;
@@ -1365,15 +1384,15 @@ void manage(Window w, XWindowAttributes * wa)
 	XMoveResizeWindow(dpy, c->win, c->x + 2 * sw, c->y, c->w, c->h);	/* some windows require
 																		   this */
 	setclientstate(c, NormalState);
-	if (!switcher.win && c->mon == selmon)
+	if (!modal && c->mon == selmon)
 		unfocus(selmon->sel, 0);
-	if (!switcher.win)
+	if (!modal)
 		c->mon->sel = c;
 	arrange(c->mon);
 	XMapWindow(dpy, c->win);
-	if (!switcher.win)
+	if (!modal)
 		focus(NULL);
-	else if (c->mon == switcher.mon)
+	if (switcher.win && c->mon == switcher.mon)
 	{
 		XRaiseWindow(dpy, switcher.win);
 		switcherrefresh();
@@ -1531,22 +1550,27 @@ void propertynotify(XEvent * e)
 	Client *c;
 	Window trans;
 	XPropertyEvent *ev = &e->xproperty;
+	int icon = switcher.win && ev->atom == switcher.iconatom;
 
 	if ((ev->window == root) && (ev->atom == XA_WM_NAME))
 		updatestatus();
 	else if (ev->state == PropertyDelete && ev->atom != XA_WM_CLASS
-			 && ev->atom != XA_WM_NAME && ev->atom != netatom[NetWMName])
+			 && ev->atom != XA_WM_NAME && ev->atom != netatom[NetWMName] && !icon)
 		return;					/* ignore */
 	else if ((c = wintoclient(ev->window)))
 	{
+		if (icon)
+		{
+			switchericonchanged(c->win);
+			return;
+		}
 		switch (ev->atom)
 		{
 		default:
 			break;
 		case XA_WM_CLASS:
 			updateclass(c);
-			if (switcher.win && c->mon == switcher.mon)
-				switcherrefresh();
+			switcherupdate(c);
 			break;
 		case XA_WM_TRANSIENT_FOR:
 			if (!c->isfloating && (XGetTransientForHint(dpy, c->win, &trans)) &&
@@ -1566,8 +1590,7 @@ void propertynotify(XEvent * e)
 			updatetitle(c);
 			if (c == c->mon->sel)
 				drawbar(c->mon);
-			if (switcher.win && c->mon == switcher.mon)
-				switcherrefresh();
+			switcherupdate(c);
 		}
 		if (ev->atom == netatom[NetWMWindowType])
 			updatewindowtype(c);
@@ -1743,6 +1766,8 @@ void sendmon(Client * c, Monitor * m)
 	attachstack(c);
 	focus(NULL);
 	arrange(NULL);
+	if (switcher.win)
+		switcherrefresh();
 }
 
 void setclientstate(Client * c, long state)
@@ -2047,6 +2072,8 @@ void tile(Monitor * m)
 
 void togglebar(const Arg * arg)
 {
+	if (switcher.win && switcher.hover && switcher.mon == selmon)
+		switcherclose();
 	selmon->showbar = selmon->pertag->showbars[selmon->pertag->curtag] = !selmon->showbar;
 	updatebarpos(selmon);
 	XMoveResizeWindow(dpy, selmon->barwin, selmon->wx + sp, selmon->by + vp, BARWIDTH(selmon),
@@ -2156,7 +2183,7 @@ void unmanage(Client * c, int destroyed)
 	if (m->sel == c)
 		m->sel = NULL;
 	free(c);
-	if (!switcher.win || !selmon->sel)
+	if (!switcher.win || switcher.hover || !selmon->sel)
 		focus(NULL);
 	updateclientlist();
 	arrange(m);
@@ -2185,7 +2212,7 @@ void updatebars(void)
 		.override_redirect = True,
 		.background_pixmap = ParentRelative,
 		.border_pixel = scheme[SchemeNorm][ColBorder].pixel,
-		.event_mask = ButtonPressMask | ExposureMask
+		.event_mask = ButtonPressMask | ExposureMask | PointerMotionMask | EnterWindowMask | LeaveWindowMask
 	};
 	XClassHint ch = { "dwm", "dwm" };
 	for (m = mons; m; m = m->next)

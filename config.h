@@ -23,15 +23,16 @@ static const char col_dirty_white[] = "#eeeeee";
 static const char col_dark_yellow[] = "#f7ca88";
 static const char col_white[] = "#f5f5f5";
 static const char col_green[] = "#87af5f";
-static const char col_blue[] = "#8197bf";
+static const char col_selection[] = "#313131";
+static const char col_muted[] = "#dddddd";
 
 static const char *colors[][3] = {
 	/* fg bg border */
 	[SchemeNorm] = {col_dirty_white, col_soft_black, col_white},	// Normal
 	[SchemeSel] = {col_dark_yellow, col_soft_black, col_white},	// Selected
-	[SchemeBlue] = {col_blue, col_soft_black, col_blue},
+	[SchemeSwitcherSel] = {col_green, col_selection, col_green},
+	[SchemeSwitcherTitle] = {col_muted, col_soft_black, col_white},
 	[SchemeSwitcherWorkspace] = {col_dark_yellow, col_soft_black, col_dark_yellow},
-	[SchemeSwitcherFilter] = {col_green, col_soft_black, col_green},
 	[SchemeSwitcherBorder] = {col_dirty_white, col_soft_black, col_white},
 };
 
